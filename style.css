@@ -897,13 +897,17 @@ a { text-decoration: none; color: inherit; }
 /* Two layer system for crossfade/slide/zoom transitions */
 .pano-slide-layer {
   position: absolute; inset: 0;
-  background-size: contain;
-  background-position: center center;
-  background-repeat: no-repeat;
-  background-color: transparent;
-  will-change: opacity, transform;
-  border-radius: var(--r-xl);
+  display: flex; align-items: center; justify-content: center;
   overflow: hidden;
+  will-change: opacity, transform;
+}
+.pano-slide-img {
+  display: block;
+  max-width: 88%; max-height: 88%;
+  width: auto; height: auto;
+  border-radius: 20px;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Dot indicators */

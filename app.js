@@ -554,38 +554,65 @@ function renderPanoramaView() {
 // ============================================================
 // 8. SLIDESHOW ENGINE
 // ============================================================
-// Image ratio cache: url → naturalWidth/naturalHeight
-const _imgRatioCache = {};
+const _imgSizeCache = {}; // url → {w, h} natural dimensions
 
-function setLayerImage(layerEl, url) {
-  layerEl.style.backgroundImage = `url('${url}')`;
-  // Apply cached ratio immediately if available
-  if (_imgRatioCache[url] !== undefined) {
-    _applyBgSize(layerEl, _imgRatioCache[url]);
+function _sizeSlideImg(img) {
+  const dims = _imgSizeCache[img.src];
+  if (!dims) return;
+  const wrap = document.getElementById('pano-strip-wrap');
+  if (!wrap) return;
+  if (!wrap.clientWidth || !wrap.clientHeight) {
+    requestAnimationFrame(() => _sizeSlideImg(img));
     return;
   }
-  // Default: contain until we know the ratio
-  layerEl.style.backgroundSize = 'contain';
-  const probe = new Image();
-  probe.onload = () => {
-    _imgRatioCache[url] = probe.naturalWidth / probe.naturalHeight;
-    _applyBgSize(layerEl, _imgRatioCache[url]);
-  };
-  probe.src = url;
+  const maxW = wrap.clientWidth  * 0.88;
+  const maxH = wrap.clientHeight * 0.88;
+  const ratio = dims.w / dims.h;
+  let w, h;
+  if (dims.w / maxW >= dims.h / maxH) {
+    w = Math.min(dims.w, maxW); h = w / ratio;
+  } else {
+    h = Math.min(dims.h, maxH); w = h * ratio;
+  }
+  img.style.width  = Math.round(w) + 'px';
+  img.style.height = Math.round(h) + 'px';
+
+  // Self-clip: clip the layer to only its own image bounds.
+  // Prevents ghosting when adjacent slides have different orientations (portrait/landscape).
+  const layer = img.parentElement;
+  if (layer) {
+    const lr = layer.getBoundingClientRect();
+    const ir = img.getBoundingClientRect();
+    if (lr.width && lr.height) {
+      const t = Math.max(0, (ir.top    - lr.top)    / lr.height * 100).toFixed(2);
+      const r = Math.max(0, (lr.right  - ir.right)  / lr.width  * 100).toFixed(2);
+      const b = Math.max(0, (lr.bottom - ir.bottom) / lr.height * 100).toFixed(2);
+      const l = Math.max(0, (ir.left   - lr.left)   / lr.width  * 100).toFixed(2);
+      const clip = `inset(${t}% ${r}% ${b}% ${l}%)`;
+      layer.dataset.imgClip = clip;
+      layer.style.clipPath  = clip;
+    }
+  }
 }
 
-function _applyBgSize(layerEl, imgRatio) {
-  const wrap = document.getElementById('pano-strip-wrap');
-  if (!wrap || !wrap.clientWidth || !wrap.clientHeight) return;
-  const wrapRatio = wrap.clientWidth / wrap.clientHeight;
-  // 12% buffer so scale(1.1) transitions never clip the image
-  const buf = '88%';
-  if (imgRatio < wrapRatio) {
-    // Portrait image in landscape viewer → constrained by height
-    layerEl.style.backgroundSize = `auto ${buf}`;
-  } else {
-    // Landscape/square image → constrained by width
-    layerEl.style.backgroundSize = `${buf} auto`;
+function setLayerImage(layerEl, url) {
+  let img = layerEl.querySelector('.pano-slide-img');
+  if (!img) {
+    img = document.createElement('img');
+    img.className = 'pano-slide-img';
+    layerEl.appendChild(img);
+  }
+  img.style.width  = '';
+  img.style.height = '';
+  img.onload = () => {
+    _imgSizeCache[url] = { w: img.naturalWidth, h: img.naturalHeight };
+    _sizeSlideImg(img);
+  };
+  img.src = url;
+  if (_imgSizeCache[url]) _sizeSlideImg(img);
+  else if (img.complete && img.naturalWidth) {
+    _imgSizeCache[url] = { w: img.naturalWidth, h: img.naturalHeight };
+    _sizeSlideImg(img);
   }
 }
 
@@ -603,22 +630,19 @@ function buildPanoramaStrip(photos) {
   const thumbList  = document.getElementById('pano-thumb-list');
 
   // Reset layers
-  layerA.style.cssText = 'position:absolute;inset:0;background-position:center;will-change:opacity,transform;z-index:2;opacity:1;transform:none;transition:none;animation:none;';
-  layerB.style.cssText = 'position:absolute;inset:0;background-position:center;will-change:opacity,transform;z-index:1;opacity:0;transform:none;transition:none;animation:none;';
+  layerA.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:opacity,transform;z-index:2;opacity:1;transform:none;transition:none;animation:none;';
+  layerB.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;will-change:opacity,transform;z-index:1;opacity:0;transform:none;transition:none;animation:none;';
   if (thumbList) thumbList.innerHTML = '';
 
   if (photos.length === 0) {
     controls.style.display = 'none';
-    layerA.style.backgroundImage = '';
-    layerA.style.display = 'flex';
-    layerA.style.alignItems = 'center';
-    layerA.style.justifyContent = 'center';
     layerA.innerHTML = `<div style="text-align:center;color:rgba(255,255,255,.5)">
       <div style="font-size:48px;margin-bottom:12px">📷</div>
       <p style="font-size:14px">이 앨범에 사진이 없습니다</p></div>`;
     return;
   }
   layerA.innerHTML = '';
+  layerB.innerHTML = '';
   layerA.style.display = '';
 
   controls.style.display = 'flex';
@@ -670,7 +694,6 @@ function goToSlide(rawIdx, direction = 'next') {
   const inEl  = document.getElementById(`pano-layer-${inId}`);
   const outEl = document.getElementById(`pano-layer-${outId}`);
 
-  // Set new image on incoming layer
   inEl.style.animation = 'none';
   setLayerImage(inEl, slideshowPhotos[newIdx].url);
 
@@ -699,11 +722,14 @@ function applySlideTransition(inEl, outEl, direction) {
     el.style.transition = 'none';
     el.style.animation  = 'none';
     el.style.filter     = '';
-    el.style.clipPath   = '';
     el.style.transformOrigin = '';
   });
+  // Clear inEl clip (wipe needs a clean start); outEl keeps its self-clip to prevent ghosting
+  inEl.style.clipPath = '';
   // Force reflow
   inEl.getBoundingClientRect();
+  // Re-apply inEl self-clip; wipe effect will override this with its own clip below
+  if (inEl.dataset.imgClip) inEl.style.clipPath = inEl.dataset.imgClip;
 
   switch (slideshowEffect) {
     case 'fade':
@@ -891,6 +917,8 @@ function applySlideTransition(inEl, outEl, direction) {
     outEl.style.clipPath        = '';
     outEl.style.transformOrigin = '';
     outEl.style.zIndex          = '1';
+    // Restore inEl self-clip (wipe effect leaves a full-reveal clip with no rounding)
+    if (inEl.dataset.imgClip) inEl.style.clipPath = inEl.dataset.imgClip;
   }, dur + 80);
 }
 
