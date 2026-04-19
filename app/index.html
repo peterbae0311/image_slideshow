@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#7c3aed">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="앨범">
+  <title>앨범</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== SETTINGS MODAL ===================== -->
+<div id="settings-modal" class="modal-overlay">
+  <div class="modal-box settings-box">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <span class="modal-emoji">⚙️</span>
+        <div>
+          <h2>API 키 설정</h2>
+          <p class="modal-subtitle">서비스 이용에 필요한 키를 입력해주세요</p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-body modal-scroll">
+      <div class="settings-section">
+        <div class="settings-section-title">📦 Supabase (필수)</div>
+        <div class="form-group">
+          <label>Project URL <span class="req">*</span></label>
+          <input type="url" id="cfg-supabase-url" placeholder="https://xxxx.supabase.co" autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Anon Key <span class="req">*</span></label>
+          <input type="password" id="cfg-supabase-key" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." autocomplete="off">
+        </div>
+      </div>
+      <div class="settings-section">
+        <div class="settings-section-title">🤖 AI API 키 (이미지 분석)</div>
+        <div class="form-group">
+          <label>OpenRouter API Key</label>
+          <input type="password" id="cfg-openrouter-key" placeholder="sk-or-v1-..." autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>Groq API Key</label>
+          <input type="password" id="cfg-groq-key" placeholder="gsk_..." autocomplete="off">
+        </div>
+        <div class="form-group">
+          <label>HuggingFace Token</label>
+          <input type="password" id="cfg-hf-token" placeholder="hf_..." autocomplete="off">
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="btn-save-settings" class="btn-primary btn-full">저장 후 시작하기</button>
+      <button onclick="localStorage.clear(); location.reload();" class="btn-reset-settings">
+        설정 초기화 후 새로고침
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== ADD ALBUM MODAL ===================== -->
+<div id="add-modal" class="modal-overlay" style="display:none">
+  <div class="modal-box add-box">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <span class="modal-emoji" id="add-modal-emoji">📁</span>
+        <div>
+          <h2 id="add-modal-title">새 앨범 추가</h2>
+          <p class="modal-subtitle" id="add-modal-subtitle">사진과 배경 음악을 선택해주세요</p>
+        </div>
+      </div>
+      <button class="btn-close" id="btn-close-add">✕</button>
+    </div>
+    <div class="modal-body modal-scroll">
+
+      <!-- 앨범 명칭 + 일자 -->
+      <div class="modal-section-card">
+        <div class="modal-section-label">
+          <span class="label-dot"></span>
+          앨범 명칭 &amp; 일자
+        </div>
+        <div class="form-group" style="margin-bottom:10px">
+          <div class="input-with-count">
+            <input type="text" id="input-album-name" placeholder="앨범 이름을 입력하세요" maxlength="200">
+            <span class="char-count"><span id="name-char-count">0</span>/200</span>
+          </div>
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <input type="date" id="input-album-date" class="select-input" style="width:auto">
+        </div>
+      </div>
+
+      <!-- 사진 업로드 -->
+      <div class="modal-section-card">
+        <div class="modal-section-label">
+          <span class="label-dot"></span>
+          사진 업로드
+        </div>
+        <div class="form-group">
+          <div id="drop-zone" class="drop-zone">
+            <input type="file" id="file-input" multiple accept="image/*" style="display:none">
+            <div class="drop-icon">📷</div>
+            <p class="drop-text">탭하여 사진 추가</p>
+            <p class="drop-hint">JPG, PNG, WEBP · 여러 장 동시 선택 가능</p>
+          </div>
+          <div id="photo-preview-grid" class="photo-preview-grid"></div>
+        </div>
+      </div>
+
+      <!-- 배경 음악 -->
+      <div class="modal-section-card">
+        <div class="modal-section-label">
+          <span class="label-dot"></span>
+          배경 음악
+        </div>
+        <div id="modal-music-list" class="modal-music-list"></div>
+        <button id="btn-add-music" class="btn-add-music" type="button">＋ 음악 추가</button>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" id="btn-cancel-add">취소</button>
+      <button id="btn-save-album" class="btn-primary">
+        <span id="save-btn-label">저장</span>
+        <div id="save-spinner" class="spinner" style="display:none"></div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== MUSIC PICKER MODAL ===================== -->
+<div id="music-picker-modal" class="modal-overlay music-picker-overlay" style="display:none">
+  <div class="modal-box music-picker-box">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <span class="modal-emoji" style="background:linear-gradient(135deg,#7c3aed,#f43f8e)">🎵</span>
+        <div>
+          <h2>배경 음악 선택</h2>
+          <p class="modal-subtitle">추가할 음악을 선택해주세요</p>
+        </div>
+      </div>
+      <button class="btn-close" id="btn-close-music-picker">✕</button>
+    </div>
+    <div class="modal-body modal-scroll">
+      <!-- 유형 탭 -->
+      <div class="music-source-tabs">
+        <button class="music-tab active" id="mptab-file" type="button">📂 음악 파일</button>
+        <button class="music-tab" id="mptab-ai" type="button">🤖 AI 제공</button>
+      </div>
+
+      <!-- 음악 파일 섹션 -->
+      <div id="mp-file-section" style="margin-top:14px">
+        <input type="file" id="mp-file-input" accept="audio/*" style="display:none" multiple>
+        <button id="btn-mp-file" class="btn-local-music" type="button">
+          📂 음악 파일 선택 (MP3, WAV, OGG 등)
+        </button>
+        <p class="drop-hint" style="margin-top:8px;text-align:center">파일을 선택하면 자동으로 추가됩니다</p>
+      </div>
+
+      <!-- AI 제공 섹션 -->
+      <div id="mp-ai-section" style="display:none; margin-top:14px">
+        <select id="mp-category-select" class="select-input">
+          <option value="">카테고리를 선택하세요</option>
+          <option>클래식</option>
+          <option>재즈</option>
+          <option>자연/힐링</option>
+          <option>팝</option>
+          <option>명상</option>
+        </select>
+        <div id="mp-music-list" class="music-list-container" style="display:none; margin-top:8px">
+          <div id="mp-music-items"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== VIEW: ALBUM LIST ===================== -->
+<div id="view-list" class="view">
+
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-icon" aria-hidden="true">🌅</span>
+      <span class="brand-name">앨범</span>
+    </div>
+    <button id="btn-add" class="btn-add-fab" aria-label="앨범 추가">+ 추가</button>
+  </header>
+
+  <div class="list-meta-bar">
+    <span class="list-title">앨범 목록</span>
+    <span id="record-count" class="badge" aria-live="polite">0개</span>
+  </div>
+
+  <main id="record-list" class="record-list-scroll" role="list" aria-label="앨범 목록">
+    <div class="list-empty">
+      <div class="list-empty-icon" aria-hidden="true">🗂️</div>
+      <p>앨범이 없습니다</p>
+      <p class="list-empty-sub">+ 추가 버튼으로 시작하세요</p>
+    </div>
+  </main>
+
+  <footer class="app-footer">
+    <button class="btn-settings" id="btn-open-settings" aria-label="설정 열기">⚙️ 설정</button>
+  </footer>
+
+</div>
+
+<!-- ===================== VIEW: SLIDESHOW VIEWER ===================== -->
+<div id="view-viewer" class="view" aria-label="슬라이드쇼 뷰어">
+
+  <header class="viewer-header">
+    <button id="btn-back" class="btn-back" onclick="showEmptyRight()" aria-label="뒤로 가기">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+    </button>
+    <div class="viewer-title-wrap">
+      <h2 id="pano-title" class="viewer-title">앨범 제목</h2>
+      <span id="pano-photo-count" class="pano-photo-count">0장</span>
+    </div>
+    <span id="pano-date" class="viewer-date"></span>
+  </header>
+
+  <!-- Main panorama/slideshow area -->
+  <div id="panorama-view" style="display:flex; flex-direction:column; flex:1; overflow:hidden; min-height:0;">
+
+    <!-- Slide canvas -->
+    <div id="pano-strip-wrap" class="pano-strip-wrap" role="img" aria-label="슬라이드 이미지">
+      <div id="pano-layer-a" class="pano-slide-layer" style="z-index:2"></div>
+      <div id="pano-layer-b" class="pano-slide-layer" style="opacity:0;z-index:1"></div>
+      <div id="pano-loading" class="pano-loading" style="display:none" aria-live="polite" role="status">
+        <div class="loading-ring" aria-hidden="true"></div>
+        <p>AI 분석 중...</p>
+      </div>
+    </div>
+
+    <!-- Horizontal thumbnail strip -->
+    <div class="thumb-strip-outer" role="navigation" aria-label="사진 목록">
+      <div id="pano-thumb-list" class="pano-thumb-list"></div>
+    </div>
+
+    <!-- Slide controls bar -->
+    <div id="pano-controls" class="slide-controls-bar" style="display:none" role="toolbar" aria-label="슬라이드 컨트롤">
+      <span id="pano-slide-index" class="slide-index-badge" aria-live="polite">1 / 1</span>
+      <button id="btn-slide-prev" class="ctrl-btn" aria-label="이전 사진">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button id="btn-pano-play" class="ctrl-btn ctrl-btn-play" aria-label="자동재생 정지">⏸</button>
+      <button id="btn-slide-next" class="ctrl-btn" aria-label="다음 사진">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <select id="pano-speed-select" class="ctrl-select" aria-label="전환 속도">
+        <option value="2000">2초</option>
+        <option value="3000" selected>3초</option>
+        <option value="5000">5초</option>
+        <option value="8000">8초</option>
+        <option value="10000">10초</option>
+      </select>
+      <select id="pano-effect-select" class="ctrl-select" aria-label="전환 효과">
+        <option value="fade">페이드</option>
+        <option value="slide">슬라이드</option>
+        <option value="push">푸시</option>
+        <option value="zoom">줌</option>
+        <option value="zoomout">줌아웃</option>
+        <option value="kenburns">켄번즈</option>
+        <option value="rotate">회전</option>
+        <option value="flip">플립</option>
+        <option value="swing">스윙</option>
+        <option value="wipe">와이프</option>
+        <option value="blur">블러</option>
+        <option value="glitch">글리치</option>
+      </select>
+    </div>
+
+    <!-- Viewer action bar: music + AI button -->
+    <div class="viewer-actions">
+      <div id="pano-music-divider" style="display:none"></div>
+      <div id="pano-music-inline" class="music-inline" style="display:none" role="region" aria-label="음악 플레이어">
+        <div id="music-icon-anim" class="music-icon-anim" aria-hidden="true">🎵</div>
+        <span id="np-name" class="np-name" aria-label="현재 재생 중">-</span>
+        <button id="btn-play" class="ctrl-btn" aria-label="재생/정지">▶</button>
+        <div id="music-progress-wrap" class="music-progress-bar" role="progressbar" aria-label="재생 진행률">
+          <div id="music-progress-fill" class="music-progress-fill"></div>
+        </div>
+        <span id="music-cur-time" class="time-label" aria-label="현재 재생 시간">0:00</span>
+        <span class="time-sep" aria-hidden="true">/</span>
+        <span id="music-total-time" class="time-label" aria-label="전체 재생 시간">-:--</span>
+        <button id="btn-mute" class="ctrl-btn" aria-label="음소거">🔊</button>
+        <input type="range" id="volume-slider" class="volume-slider" min="0" max="1" step="0.05" value="0.7" aria-label="볼륨">
+      </div>
+      <button id="btn-ai-analyze" class="btn-ai-analyze" aria-label="AI 분석 실행">🤖 AI 분석</button>
+    </div>
+
+  </div><!-- /#panorama-view -->
+
+  <!-- AI result bottom sheet -->
+  <div id="ai-panel-sheet" class="bottom-sheet" role="dialog" aria-modal="true" aria-label="AI 분석 결과">
+    <div class="sheet-handle" onclick="document.getElementById('ai-panel-sheet').classList.remove('open')" role="button" aria-label="닫기" tabindex="0"></div>
+    <div class="sheet-content">
+      <div id="pano-ai-panel" class="pano-ai-panel">
+        <div class="pano-ai-empty">
+          <div class="pano-ai-empty-icon" aria-hidden="true">🤖</div>
+          <p>AI 분석 버튼을<br>눌러주세요</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty right: kept for JS compat, never shown in mobile -->
+  <div id="empty-right" style="display:none" aria-hidden="true"></div>
+
+  <!-- Hidden elements for desktop JS compat -->
+  <div style="display:none" aria-hidden="true">
+    <button id="btn-generate" disabled></button>
+    <div id="generate-progress">
+      <div id="gen-progress-fill"></div>
+      <p id="gen-status-text"></p>
+    </div>
+    <div id="ai-models-section">
+      <div id="ai-models-total"></div>
+      <div id="ai-models-grid"></div>
+    </div>
+    <div id="ai-results-section">
+      <div id="ai-results-total"></div>
+      <div id="ai-results-list"></div>
+    </div>
+    <div id="ai-model-badges"></div>
+  </div>
+
+</div><!-- /#view-viewer -->
+
+<!-- Toast notification -->
+<div id="toast" class="toast" role="alert" aria-live="assertive"></div>
+
+<script src="app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('[PWA] SW registered:', reg.scope))
+        .catch(err => console.warn('[PWA] SW registration failed:', err));
+    });
+  }
+</script>
+</body>
+</html>

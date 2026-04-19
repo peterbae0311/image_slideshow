@@ -1,0 +1,30 @@
+# 환경변수 - 절대 커밋 금지
+.env
+.env.local
+.env.*.local
+
+# 의존성
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# 빌드 산출물
+dist/
+build/
+.next/
+out/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 로그
+*.log
+logs/

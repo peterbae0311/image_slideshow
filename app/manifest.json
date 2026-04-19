@@ -1,1 +1,17 @@
-ewogICJuYW1lIjogIuyVqOuylCAtIOqwgOyhsSDtj6zthqAg7Iqs65287J2065Oc7Ie8IiwKICAic2hvcnRfbmFtZSI6ICLslajrspQiLAogICJkZXNjcmlwdGlvbiI6ICLsgqzsp4TsnYQg7JeF66Gc65Oc7ZWY6rOgIOyKrOudvOydtOuTnOyHvOuhnCDqsJDsg4HtlZjripQg6rCA7KGxIOyVqOuylCIsCiAgInN0YXJ0X3VybCI6ICIuL2luZGV4Lmh0bWwiLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiNmNWYzZmYiLAogICJ0aGVtZV9jb2xvciI6ICIjN2MzYWVkIiwKICAib3JpZW50YXRpb24iOiAicG9ydHJhaXQtcHJpbWFyeSIsCiAgImljb25zIjogWwogICAgeyAic3JjIjogImljb25zL2ljb24tMTkyLnBuZyIsICJzaXplcyI6ICIxOTJ4MTkyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiwgInB1cnBvc2UiOiAiYW55IiB9LAogICAgeyAic3JjIjogImljb25zL2ljb24tNTEyLnBuZyIsICJzaXplcyI6ICI1MTJ4NTEyIiwgInR5cGUiOiAiaW1hZ2UvcG5nIiwgInB1cnBvc2UiOiAiYW55IiB9LAogICAgeyAic3JjIjogImljb25zL2ljb24tbWFza2FibGUucG5nIiwgInNpemVzIjogIjUxMng1MTIiLCAidHlwZSI6ICJpbWFnZS9wbmciLCAicHVycG9zZSI6ICJtYXNrYWJsZSIgfQogIF0sCiAgImNhdGVnb3JpZXMiOiBbInBob3RvIiwgImxpZmVzdHlsZSJdLAogICJsYW5nIjogImtvIgp9Cg==
+{
+  "name": "앨범 - 가족 포토 슬라이드쇼",
+  "short_name": "앨범",
+  "description": "사진을 업로드하고 슬라이드쇼로 감상하는 가족 앨범",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f5f3ff",
+  "theme_color": "#7c3aed",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "categories": ["photo", "lifestyle"],
+  "lang": "ko"
+}
