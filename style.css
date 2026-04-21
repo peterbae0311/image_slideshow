@@ -1449,18 +1449,34 @@ a { text-decoration: none; color: inherit; }
 /* ============================================================
    MUSIC PICKER SUB-MODAL
    ============================================================ */
-/* ── 우측 AI 분석 패널 ── */
+/* ── 우측 좋은 글 패널 ── */
 .pano-ai-panel {
   width: 224px; flex-shrink: 0;
   border-radius: var(--r-xl);
-  background: linear-gradient(160deg, rgba(255,255,255,.9) 0%, rgba(245,243,255,.85) 100%);
-  backdrop-filter: blur(16px) saturate(1.4);
-  border: 1.5px solid rgba(124,58,237,.12);
-  box-shadow: 0 4px 20px rgba(124,58,237,.1), 0 1px 4px rgba(0,0,0,.04);
-  padding: 18px 15px;
+  background: linear-gradient(170deg,
+    rgba(255,255,255,.96) 0%,
+    rgba(248,245,255,.92) 50%,
+    rgba(253,244,255,.88) 100%);
+  backdrop-filter: blur(20px) saturate(1.6);
+  border: 1px solid rgba(124,58,237,.10);
+  box-shadow:
+    0 4px 24px rgba(124,58,237,.08),
+    0 1px 4px rgba(0,0,0,.03),
+    inset 0 1px 0 rgba(255,255,255,.8);
+  padding: 16px 14px;
   overflow-y: auto; overflow-x: hidden;
   display: flex; flex-direction: column; gap: 16px;
   scrollbar-width: thin;
+  position: relative;
+}
+/* 상단 컬러 accent 라인 */
+.pano-ai-panel::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 16px; right: 16px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgba(124,58,237,.25), rgba(244,63,142,.2), transparent);
+  border-radius: 0 0 2px 2px;
 }
 .pano-ai-empty {
   flex: 1; display: flex; flex-direction: column;
@@ -1545,34 +1561,60 @@ a { text-decoration: none; color: inherit; }
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px 8px;
+  padding: 20px 16px;
   overflow: hidden;
+  position: relative;
 }
 
-@keyframes gtSlideIn {
-  from { opacity: 0; transform: translateY(22px); }
-  to   { opacity: 1; transform: translateY(0); }
+/* 상단/하단 소프트 마스크 */
+.good-text-roller::before,
+.good-text-roller::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0;
+  height: 36px;
+  pointer-events: none;
+  z-index: 2;
 }
-@keyframes gtSlideOut {
-  from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-22px); }
+.good-text-roller::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(255,255,255,.9), transparent);
+}
+.good-text-roller::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(245,243,255,.9), transparent);
+}
+
+@keyframes gtFadeSlideIn {
+  0%   { opacity: 0; transform: translateY(18px); }
+  60%  { opacity: 1; }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes gtFadeSlideOut {
+  0%   { opacity: 1; transform: translateY(0); }
+  40%  { opacity: 0; }
+  100% { opacity: 0; transform: translateY(-18px); }
 }
 
 .good-text-rolling-card {
+  font-family: 'Noto Sans KR', sans-serif;
   font-size: 13px;
-  font-weight: 500;
-  line-height: 2.0;
+  font-weight: 400;
+  line-height: 2.15;
   text-align: center;
   word-break: keep-all;
-  padding: 0 6px;
+  padding: 0 2px;
   opacity: 0;
-  letter-spacing: 0.01em;
+  letter-spacing: 0.025em;
+  will-change: opacity, transform;
+  /* 인용 장식 — 상단에 여는 따옴표 느낌의 accent bar */
+  position: relative;
 }
 .good-text-rolling-card.gt-in {
-  animation: gtSlideIn 0.7s cubic-bezier(.22,1,.36,1) forwards;
+  animation: gtFadeSlideIn 1s cubic-bezier(.22,1,.36,1) forwards;
 }
 .good-text-rolling-card.gt-out {
-  animation: gtSlideOut 0.7s cubic-bezier(.4,0,1,1) forwards;
+  animation: gtFadeSlideOut 0.55s cubic-bezier(.55,0,1,.8) forwards;
 }
 .pano-date {
   font-size: 12px; font-weight: 600; color: var(--text-muted);

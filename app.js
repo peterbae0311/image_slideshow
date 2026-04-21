@@ -2066,14 +2066,22 @@ const GOOD_TEXTS = [
 ];
 
 const GOOD_TEXT_COLORS = [
-  '#7c3aed','#db2777','#2563eb','#059669','#d97706','#0891b2','#9333ea','#dc2626',
+  '#6d28d9', // violet — 브랜드 메인
+  '#4f46e5', // indigo — 차분한 깊이
+  '#0e7490', // cyan   — 청아한 느낌
+  '#0f766e', // teal   — 자연스러운 초록
+  '#7c3aed', // violet-light
+  '#1d4ed8', // blue   — 맑고 선명
+  '#9333ea', // purple — 몽환적
+  '#be185d', // pink   — 따뜻한 장미
+  '#334155', // slate  — 절제된 품격
+  '#0369a1', // sky    — 투명한 하늘
 ];
 
 function generateGoodTexts() {
   const panel = document.getElementById('pano-ai-panel');
   if (!panel) return;
 
-  // Stop any previous rolling timer
   if (goodTextsTimer) { clearInterval(goodTextsTimer); goodTextsTimer = null; }
 
   const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
@@ -2090,24 +2098,26 @@ function generateGoodTexts() {
     card.classList.add('gt-in');
   }
 
-  const FADE_MS = 700; // fade-out duration (must match CSS)
-  const SHOW_MS = 6000; // how long each quote is visible
+  const OUT_MS  = 550;  // gtFadeSlideOut duration — must match CSS (0.55s)
+  const SHOW_MS = 6000; // visible duration per quote
 
   function next() {
     card.classList.remove('gt-in');
     card.classList.add('gt-out');
+    // Wait only for the out animation, then immediately swap content
     setTimeout(() => {
       const color = GOOD_TEXT_COLORS[idx % GOOD_TEXT_COLORS.length];
       show(shuffled[idx], color);
       idx = (idx + 1) % shuffled.length;
-    }, FADE_MS);
+    }, OUT_MS);
   }
 
   // Show first card immediately
   show(shuffled[idx], GOOD_TEXT_COLORS[0]);
   idx = 1;
 
-  goodTextsTimer = setInterval(next, SHOW_MS + FADE_MS);
+  // Interval = visible time + out animation; in-animation overlaps the next cycle
+  goodTextsTimer = setInterval(next, SHOW_MS + OUT_MS);
 }
 
 document.addEventListener('DOMContentLoaded', init);
