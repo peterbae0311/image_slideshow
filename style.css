@@ -1654,8 +1654,22 @@ a { text-decoration: none; color: inherit; }
   opacity: 0;
   letter-spacing: 0.025em;
   will-change: opacity, transform;
-  /* 인용 장식 — 상단에 여는 따옴표 느낌의 accent bar */
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.gt-body {
+  margin: 0;
+}
+.gt-source {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  opacity: 0.52;
+  color: inherit;
+  font-style: italic;
 }
 .good-text-rolling-card.gt-in {
   animation: gtFadeSlideIn 1s cubic-bezier(.22,1,.36,1) forwards;
