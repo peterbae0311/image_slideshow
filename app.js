@@ -2084,38 +2084,92 @@ function generateGoodTexts() {
 
   const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
   let idx = 0;
+  let paused = false;
 
-  panel.innerHTML = `<div class="good-text-roller"><div class="good-text-rolling-card"></div></div>`;
-  const card = panel.querySelector('.good-text-rolling-card');
+  panel.innerHTML = `
+    <div class="good-text-roller">
+      <div class="good-text-roller-content">
+        <div class="good-text-rolling-card"></div>
+      </div>
+      <div class="good-text-nav">
+        <button class="good-text-nav-btn" id="gt-btn-prev" title="이전">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="good-text-nav-dots" id="gt-dots"></div>
+        <button class="good-text-nav-btn" id="gt-btn-pause" title="일시정지">
+          <svg id="gt-pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+          <svg id="gt-play-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        </button>
+        <button class="good-text-nav-btn" id="gt-btn-next" title="다음">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>`;
+
+  const card    = panel.querySelector('.good-text-rolling-card');
+  const dotsEl  = panel.querySelector('#gt-dots');
+  const DOT_COUNT = Math.min(5, shuffled.length);
+
+  // Build indicator dots
+  for (let i = 0; i < DOT_COUNT; i++) {
+    const d = document.createElement('div');
+    d.className = 'good-text-nav-dot' + (i === 0 ? ' active' : '');
+    dotsEl.appendChild(d);
+  }
+
+  function updateDots(i) {
+    const dots = dotsEl.querySelectorAll('.good-text-nav-dot');
+    dots.forEach((d, j) => d.classList.toggle('active', j === i % DOT_COUNT));
+  }
 
   function show(text, color) {
     card.style.color = color;
     card.textContent = text;
     card.classList.remove('gt-out');
-    void card.offsetWidth; // reflow
+    void card.offsetWidth;
     card.classList.add('gt-in');
   }
 
-  const OUT_MS  = 550;  // gtFadeSlideOut duration — must match CSS (0.55s)
-  const SHOW_MS = 10000; // visible duration per quote
+  const OUT_MS  = 550;
+  const SHOW_MS = 10000;
 
-  function next() {
+  function goTo(newIdx, dir = 'next') {
+    idx = ((newIdx % shuffled.length) + shuffled.length) % shuffled.length;
     card.classList.remove('gt-in');
     card.classList.add('gt-out');
-    // Wait only for the out animation, then immediately swap content
     setTimeout(() => {
-      const color = GOOD_TEXT_COLORS[idx % GOOD_TEXT_COLORS.length];
-      show(shuffled[idx], color);
-      idx = (idx + 1) % shuffled.length;
+      show(shuffled[idx], GOOD_TEXT_COLORS[idx % GOOD_TEXT_COLORS.length]);
+      updateDots(idx);
     }, OUT_MS);
   }
 
-  // Show first card immediately
-  show(shuffled[idx], GOOD_TEXT_COLORS[0]);
-  idx = 1;
+  function scheduleNext() {
+    if (goodTextsTimer) clearInterval(goodTextsTimer);
+    goodTextsTimer = setInterval(() => {
+      if (!paused) goTo(idx + 1);
+    }, SHOW_MS + OUT_MS);
+  }
 
-  // Interval = visible time + out animation; in-animation overlaps the next cycle
-  goodTextsTimer = setInterval(next, SHOW_MS + OUT_MS);
+  // Controls
+  panel.querySelector('#gt-btn-prev').addEventListener('click', () => {
+    goTo(idx - 1);
+    scheduleNext();
+  });
+  panel.querySelector('#gt-btn-next').addEventListener('click', () => {
+    goTo(idx + 1);
+    scheduleNext();
+  });
+  panel.querySelector('#gt-btn-pause').addEventListener('click', () => {
+    paused = !paused;
+    document.getElementById('gt-pause-icon').style.display = paused ? 'none' : '';
+    document.getElementById('gt-play-icon').style.display  = paused ? ''     : 'none';
+  });
+
+  // Show first card immediately
+  show(shuffled[0], GOOD_TEXT_COLORS[0]);
+  updateDots(0);
+  idx = 1;
+  scheduleNext();
 }
 
 document.addEventListener('DOMContentLoaded', init);

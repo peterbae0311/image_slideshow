@@ -1559,16 +1559,63 @@ a { text-decoration: none; color: inherit; }
 .good-text-roller {
   flex: 1;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 16px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 0;
   overflow: hidden;
   position: relative;
 }
+.good-text-roller-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px 12px;
+  overflow: hidden;
+  position: relative;
+}
+.good-text-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 0 14px;
+  flex-shrink: 0;
+}
+.good-text-nav-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  transition: background var(--t), color var(--t), transform var(--t);
+}
+.good-text-nav-btn:hover {
+  background: rgba(124,58,237,.10);
+  color: var(--primary);
+  transform: scale(1.12);
+}
+.good-text-nav-btn:active { transform: scale(.95); }
+.good-text-nav-dots {
+  display: flex; gap: 5px; align-items: center;
+}
+.good-text-nav-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--border);
+  transition: background var(--t), transform var(--t);
+}
+.good-text-nav-dot.active {
+  background: var(--primary);
+  transform: scale(1.4);
+}
 
 /* 상단/하단 소프트 마스크 */
-.good-text-roller::before,
-.good-text-roller::after {
+.good-text-roller-content::before,
+.good-text-roller-content::after {
   content: '';
   position: absolute;
   left: 0; right: 0;
@@ -1576,11 +1623,11 @@ a { text-decoration: none; color: inherit; }
   pointer-events: none;
   z-index: 2;
 }
-.good-text-roller::before {
+.good-text-roller-content::before {
   top: 0;
   background: linear-gradient(to bottom, rgba(255,255,255,.9), transparent);
 }
-.good-text-roller::after {
+.good-text-roller-content::after {
   bottom: 0;
   background: linear-gradient(to top, rgba(245,243,255,.9), transparent);
 }
