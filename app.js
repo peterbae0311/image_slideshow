@@ -19,6 +19,7 @@ let removedPhotoIds  = [];   // existing photo IDs marked for deletion
 let previewAudio   = null;
 let previewTimer   = null;
 let bgAudio        = null;
+let goodTextsTimer = null;
 let panoScrollAnim   = null; // legacy, unused
 let isDragging       = false;
 let dragStartX       = 0;
@@ -2056,45 +2057,46 @@ const GOOD_TEXTS = [
   '좋은 인연은 언제나 생각지도 못한 순간에 시작돼요.',
 ];
 
-const GOOD_TEXT_PALETTES = [
-  { bg: '#fdf4ff', border: '#e9d5ff', text: '#6d28d9' },
-  { bg: '#fff1f2', border: '#fecdd3', text: '#be123c' },
-  { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8' },
-  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
-  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c' },
-  { bg: '#fefce8', border: '#fde68a', text: '#92400e' },
-  { bg: '#f0f9ff', border: '#bae6fd', text: '#0369a1' },
-  { bg: '#fdf2f8', border: '#f5d0fe', text: '#a21caf' },
+const GOOD_TEXT_COLORS = [
+  '#7c3aed','#db2777','#2563eb','#059669','#d97706','#0891b2','#9333ea','#dc2626',
 ];
 
 function generateGoodTexts() {
   const panel = document.getElementById('pano-ai-panel');
   if (!panel) return;
 
-  panel.innerHTML = `<div class="pano-ai-loading">
-    <div class="loading-ring" style="width:28px;height:28px;border-width:3px"></div>
-    <span style="font-size:12px">좋은 글 모으는 중...</span>
-  </div>`;
+  // Stop any previous rolling timer
+  if (goodTextsTimer) { clearInterval(goodTextsTimer); goodTextsTimer = null; }
 
-  setTimeout(() => {
-    const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
-    const cards = shuffled.map((text, i) => {
-      const p = GOOD_TEXT_PALETTES[i % GOOD_TEXT_PALETTES.length];
-      return `<div class="good-text-card" style="
-        background:${p.bg};
-        border-color:${p.border};
-        color:${p.text};
-        animation-delay:${i * 40}ms
-      ">${escHtml(text)}</div>`;
-    }).join('');
+  const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
+  let idx = 0;
 
-    panel.innerHTML = `
-      <div class="good-text-header">
-        <span class="good-text-title">🌸 좋은 글</span>
-        <button class="good-text-refresh" onclick="generateGoodTexts()" title="새로 보기">↻</button>
-      </div>
-      <div class="good-text-list">${cards}</div>`;
-  }, 500);
+  panel.innerHTML = `<div class="good-text-roller"><div class="good-text-rolling-card"></div></div>`;
+  const card = panel.querySelector('.good-text-rolling-card');
+
+  function show(text, color) {
+    card.style.color = color;
+    card.textContent = text;
+    card.classList.remove('gt-out');
+    void card.offsetWidth; // reflow
+    card.classList.add('gt-in');
+  }
+
+  function next() {
+    card.classList.remove('gt-in');
+    card.classList.add('gt-out');
+    setTimeout(() => {
+      const color = GOOD_TEXT_COLORS[idx % GOOD_TEXT_COLORS.length];
+      show(shuffled[idx], color);
+      idx = (idx + 1) % shuffled.length;
+    }, 500);
+  }
+
+  // Show first card immediately
+  show(shuffled[idx], GOOD_TEXT_COLORS[0]);
+  idx = 1;
+
+  goodTextsTimer = setInterval(next, 4500);
 }
 
 document.addEventListener('DOMContentLoaded', init);
