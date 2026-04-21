@@ -109,13 +109,18 @@ function saveConfig(obj) {
 }
 
 function openSettings() {
+  // config.js의 APP_CONFIG 값을 우선 병합 (설정 팝업 열 때마다 최신 preset 반영)
+  const preset = window.APP_CONFIG || {};
+  if (preset.supabaseUrl) config.supabaseUrl = preset.supabaseUrl;
+  if (preset.supabaseKey) config.supabaseKey = preset.supabaseKey;
+
   const m = document.getElementById('settings-modal');
   m.style.display = 'flex';
-  if (config.supabaseUrl)     document.getElementById('cfg-supabase-url').value  = config.supabaseUrl;
-  if (config.supabaseKey)     document.getElementById('cfg-supabase-key').value  = config.supabaseKey;
-  if (config.openrouterKey)   document.getElementById('cfg-openrouter-key').value = config.openrouterKey;
-  if (config.groqKey)         document.getElementById('cfg-groq-key').value       = config.groqKey;
-  if (config.hfToken)         document.getElementById('cfg-hf-token').value        = config.hfToken;
+  document.getElementById('cfg-supabase-url').value  = config.supabaseUrl  || '';
+  document.getElementById('cfg-supabase-key').value  = config.supabaseKey  || '';
+  document.getElementById('cfg-openrouter-key').value = config.openrouterKey || '';
+  document.getElementById('cfg-groq-key').value       = config.groqKey      || '';
+  document.getElementById('cfg-hf-token').value       = config.hfToken      || '';
 }
 
 function closeSettings() {
@@ -1836,12 +1841,13 @@ function bindEvents() {
       groqKey:        document.getElementById('cfg-groq-key').value.trim(),
       hfToken:        document.getElementById('cfg-hf-token').value.trim(),
     };
-    saveConfig(config);
+    try { saveConfig(config); } catch(e) { console.warn('localStorage 저장 실패:', e); }
     closeSettings();
+    showToast('설정이 저장되었습니다 ✨', 'success');
 
     const ok = await initSupabase();
-    if (ok) { await loadAlbums(); showToast('설정이 저장되었습니다 ✨', 'success'); }
-    else     showToast('Supabase 연결 실패. URL/키를 확인해주세요', 'error');
+    if (ok) await loadAlbums();
+    else    showToast('Supabase 연결에 실패했습니다. URL/키를 확인해주세요.', 'error');
   });
 
   document.getElementById('btn-open-settings').addEventListener('click', openSettings);
