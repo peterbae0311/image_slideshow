@@ -716,7 +716,17 @@ function goToSlide(rawIdx, direction = 'next') {
     if (i === newIdx) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
 
-  inEl.style.animation = 'none';
+  // Fully reset inEl before sizing so _sizeSlideImg's getBoundingClientRect() is correct.
+  // If a previous slide/push left a transform on this layer, the clip would be computed
+  // from the off-screen position and ghosting would occur on the next transition.
+  inEl.style.transition  = 'none';
+  inEl.style.animation   = 'none';
+  inEl.style.transform   = 'none';
+  inEl.style.opacity     = '0';
+  inEl.style.filter      = '';
+  inEl.style.clipPath    = '';
+  inEl.getBoundingClientRect(); // force reflow so transform:none is applied before sizing
+
   const url = slideshowPhotos[newIdx].url;
   setLayerImage(inEl, url);
 
@@ -764,8 +774,10 @@ function applySlideTransition(inEl, outEl, direction) {
       inEl.style.zIndex = '2';
       outEl.style.zIndex = '1';
       inEl.getBoundingClientRect();
-      inEl.style.transition = `opacity ${dur}ms ${ease}`;
-      inEl.style.opacity = '1';
+      inEl.style.transition  = `opacity ${dur}ms ${ease}`;
+      outEl.style.transition = `opacity ${dur}ms ${ease}`;
+      inEl.style.opacity  = '1';
+      outEl.style.opacity = '0';
       break;
 
     case 'slide': {
