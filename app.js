@@ -556,6 +556,15 @@ function renderPanoramaView() {
 // ============================================================
 const _imgSizeCache = {}; // url → {w, h} natural dimensions
 
+function preloadSlideImages(photos) {
+  photos.forEach(photo => {
+    if (_imgSizeCache[photo.url]) return;
+    const img = new Image();
+    img.onload = () => { _imgSizeCache[photo.url] = { w: img.naturalWidth, h: img.naturalHeight }; };
+    img.src = photo.url;
+  });
+}
+
 function _sizeSlideImg(img) {
   const dims = _imgSizeCache[img.src];
   if (!dims) return;
@@ -645,6 +654,9 @@ function buildPanoramaStrip(photos) {
   layerB.innerHTML = '';
   layerA.style.display = '';
 
+  // Preload all images into cache so transitions are always smooth
+  preloadSlideImages(photos);
+
   controls.style.display = 'flex';
   document.getElementById('btn-pano-play').classList.remove('paused');
   document.getElementById('btn-pano-play').title = '자동재생 정지';
@@ -694,20 +706,35 @@ function goToSlide(rawIdx, direction = 'next') {
   const inEl  = document.getElementById(`pano-layer-${inId}`);
   const outEl = document.getElementById(`pano-layer-${outId}`);
 
-  inEl.style.animation = 'none';
-  setLayerImage(inEl, slideshowPhotos[newIdx].url);
-
-  applySlideTransition(inEl, outEl, direction);
-
   currentSlideIdx = newIdx;
   activeLayer = inId;
 
-  // Update UI
+  // Update UI immediately
   document.getElementById('pano-slide-index').textContent = `${newIdx + 1} / ${n}`;
   document.querySelectorAll('.pano-thumb-btn').forEach((d, i) => {
     d.classList.toggle('active', i === newIdx);
     if (i === newIdx) d.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   });
+
+  inEl.style.animation = 'none';
+  const url = slideshowPhotos[newIdx].url;
+  setLayerImage(inEl, url);
+
+  // Double-RAF: ensures _sizeSlideImg has run and layout is painted before transition starts
+  const doTransition = () =>
+    requestAnimationFrame(() => requestAnimationFrame(() => applySlideTransition(inEl, outEl, direction)));
+
+  if (_imgSizeCache[url]) {
+    doTransition();
+  } else {
+    const img = inEl.querySelector('.pano-slide-img');
+    if (img && img.complete && img.naturalWidth) {
+      _imgSizeCache[url] = { w: img.naturalWidth, h: img.naturalHeight };
+      doTransition();
+    } else {
+      img?.addEventListener('load', doTransition, { once: true });
+    }
+  }
 }
 
 function applySlideTransition(inEl, outEl, direction) {
