@@ -456,7 +456,7 @@ function renderAlbumList() {
         })() : ''}
       </div>
       ${thumbs || moreHtml ? `<div class="record-card-thumbs">${thumbs}${moreHtml}</div>` : ''}
-      <button class="btn-card-ai" onclick="handleAiAnalyze(event,'${album.id}')">AI 분석</button>
+      <button class="btn-card-ai" onclick="handleAiAnalyze(event,'${album.id}')">좋은 글</button>
       <div class="record-card-actions">
         <button class="record-card-edit"   onclick="handleEditAlbum(event,'${album.id}')"   title="수정">✏️</button>
         <button class="record-card-delete" onclick="handleDeleteAlbum(event,'${album.id}')" title="삭제">✕</button>
@@ -476,7 +476,7 @@ async function handleAiAnalyze(event, albumId) {
   event.stopPropagation();
   selectAlbum(albumId);
   await new Promise(r => setTimeout(r, 80));
-  generatePanorama();
+  generateGoodTexts();
 }
 
 async function handleDeleteAlbum(event, albumId) {
@@ -535,7 +535,7 @@ function renderPanoramaView() {
     } else {
       aiPanel.innerHTML = `<div class="pano-ai-empty">
         <div class="pano-ai-empty-icon">🤖</div>
-        <p>AI 분석 버튼을<br>눌러주세요</p>
+        <p>좋은 글 버튼을<br>눌러주세요</p>
       </div>`;
     }
   }
@@ -1982,6 +1982,113 @@ async function init() {
   } else {
     openSettings();
   }
+}
+
+// ============================================================
+// 16. 좋은 글
+// ============================================================
+const GOOD_TEXTS = [
+  '오늘 하루도 당신은 충분히 잘하고 있어요.',
+  '꽃이 피는 데 이유가 없듯, 당신이 웃는 데도 이유가 필요 없어요.',
+  '작은 것들을 소중히 여기는 마음이 큰 행복을 만들어요.',
+  '지금 이 순간이 나중에 당신이 그리워할 '그때'가 될 거예요.',
+  '완벽하지 않아도 괜찮아요. 당신은 이미 충분해요.',
+  '햇살이 구름 사이로 나오듯, 좋은 날은 반드시 와요.',
+  '당신의 존재 자체가 누군가에게 위로가 돼요.',
+  '천천히 가도 괜찮아요. 멈추지 않으면 반드시 도착해요.',
+  '오늘의 작은 용기가 내일의 큰 변화를 만들어요.',
+  '사랑받고 싶다면, 먼저 자신을 사랑하세요.',
+  '봄은 언제나 겨울 다음에 와요. 지금은 당신의 겨울일 뿐이에요.',
+  '눈물은 마음이 맑아지는 비예요.',
+  '당신이 걷는 길이 곧 길이 돼요.',
+  '가장 아름다운 것은 보이지 않는 것에 있어요.',
+  '한 번의 친절이 하루를 바꾸고, 하루가 인생을 바꿔요.',
+  '지금 느끼는 감정은 틀리지 않아요. 당신의 마음은 언제나 옳아요.',
+  '별은 가장 어두운 밤에 가장 밝게 빛나요.',
+  '오늘 심은 씨앗이 언젠가 그늘이 되어 돌아와요.',
+  '좋은 사람 곁에 있는 것만으로 이미 행복이에요.',
+  '바람이 불어도 흔들릴 뿐, 뿌리는 남아 있어요.',
+  '당신의 하루하루가 누군가의 기억 속에 빛나고 있어요.',
+  '넘어지는 것을 두려워하지 마세요. 일어나는 힘이 더 강해지니까요.',
+  '잔잔한 강이 바다에 닿듯, 꾸준함이 꿈에 닿아요.',
+  '지금 이 순간, 숨 한 번 깊이 쉬어요. 괜찮아요.',
+  '예쁜 마음을 가진 사람은 보면 알 수 있어요.',
+  '당신의 웃음은 세상을 조금 더 따뜻하게 만들어요.',
+  '작은 행복들이 모여 삶이 빛나요.',
+  '오래된 친구처럼, 좋은 말 한마디가 마음을 녹여요.',
+  '힘들 때일수록 더 많이 자신을 칭찬해주세요.',
+  '당신이 지나온 모든 순간이 지금의 당신을 만들었어요.',
+  '꽃은 비를 맞아야 더 예쁘게 피어요.',
+  '오늘도 무사히 하루를 마친 당신, 정말 수고했어요.',
+  '매일 조금씩 나아지는 것으로 충분해요.',
+  '사랑한다는 말은 백 번을 해도 모자라요.',
+  '인생에서 가장 좋은 날들은 아직 오지 않았어요.',
+  '당신의 꿈은 당신이 포기하지 않는 한 살아 있어요.',
+  '고요한 아침처럼, 마음에 평화가 찾아오길 바라요.',
+  '좋은 일은 예상치 못한 순간에 찾아와요.',
+  '세상에 당신 같은 사람은 단 하나뿐이에요.',
+  '비 온 뒤 땅이 굳듯, 힘든 시간이 당신을 단단하게 해요.',
+  '오늘 하루도 감사한 것 하나만 찾아보세요. 분명 있어요.',
+  '당신의 속도로 걸어가도 돼요.',
+  '작은 미소 하나가 세상을 바꿀 수 있어요.',
+  '어제보다 오늘이 조금 더 나은 당신을 응원해요.',
+  '마음이 따뜻한 사람은 어디에서나 봄을 만들어요.',
+  '길을 잃었다면, 그게 새로운 길의 시작이에요.',
+  '당신이 있어 세상이 더 아름다워요.',
+  '가장 먼 여행은 마음 속으로의 여행이에요.',
+  '오늘도 숨을 쉬고 있다는 것, 그것으로 충분해요.',
+  '사랑은 늘 가장 가까운 곳에 있어요.',
+  '당신의 진심은 언제나 상대방에게 닿아요.',
+  '느리게 걷는 사람도 결국 산 정상에 올라요.',
+  '좋아하는 것을 하는 오늘이 최고의 날이에요.',
+  '웃음은 마음의 햇살이에요.',
+  '당신이 베푼 작은 선함이 세상 어딘가서 꽃이 되어 피어요.',
+  '지금 이 자리에서 빛나고 있어요, 당신은요.',
+  '마음껏 꿈꾸세요. 꿈꾸는 사람에게 기회는 더 많이 와요.',
+  '당신의 하루가 따뜻한 빛으로 가득하길 바라요.',
+  '설레는 마음을 잃지 마세요. 그게 살아있다는 증거예요.',
+  '좋은 인연은 언제나 생각지도 못한 순간에 시작돼요.',
+];
+
+const GOOD_TEXT_PALETTES = [
+  { bg: '#fdf4ff', border: '#e9d5ff', text: '#6d28d9' },
+  { bg: '#fff1f2', border: '#fecdd3', text: '#be123c' },
+  { bg: '#eff6ff', border: '#bfdbfe', text: '#1d4ed8' },
+  { bg: '#f0fdf4', border: '#bbf7d0', text: '#15803d' },
+  { bg: '#fff7ed', border: '#fed7aa', text: '#c2410c' },
+  { bg: '#fefce8', border: '#fde68a', text: '#92400e' },
+  { bg: '#f0f9ff', border: '#bae6fd', text: '#0369a1' },
+  { bg: '#fdf2f8', border: '#f5d0fe', text: '#a21caf' },
+];
+
+function generateGoodTexts() {
+  const panel = document.getElementById('pano-ai-panel');
+  if (!panel) return;
+
+  panel.innerHTML = `<div class="pano-ai-loading">
+    <div class="loading-ring" style="width:28px;height:28px;border-width:3px"></div>
+    <span style="font-size:12px">좋은 글 모으는 중...</span>
+  </div>`;
+
+  setTimeout(() => {
+    const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
+    const cards = shuffled.map((text, i) => {
+      const p = GOOD_TEXT_PALETTES[i % GOOD_TEXT_PALETTES.length];
+      return `<div class="good-text-card" style="
+        background:${p.bg};
+        border-color:${p.border};
+        color:${p.text};
+        animation-delay:${i * 40}ms
+      ">${escHtml(text)}</div>`;
+    }).join('');
+
+    panel.innerHTML = `
+      <div class="good-text-header">
+        <span class="good-text-title">🌸 좋은 글</span>
+        <button class="good-text-refresh" onclick="generateGoodTexts()" title="새로 보기">↻</button>
+      </div>
+      <div class="good-text-list">${cards}</div>`;
+  }, 500);
 }
 
 document.addEventListener('DOMContentLoaded', init);

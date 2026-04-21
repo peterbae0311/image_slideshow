@@ -1538,6 +1538,50 @@ a { text-decoration: none; color: inherit; }
   border-radius: var(--r-full); padding: 2px 8px;
   align-self: flex-start; margin-top: 4px;
 }
+
+/* ── 좋은 글 패널 ── */
+.good-text-header {
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.good-text-title {
+  font-size: 13px; font-weight: 800; color: var(--primary);
+  letter-spacing: -.01em;
+}
+.good-text-refresh {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--primary-bg); border: 1.5px solid var(--border);
+  color: var(--primary); font-size: 14px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all var(--t);
+}
+.good-text-refresh:hover {
+  background: var(--grad-brand); color: #fff; border-color: transparent;
+  transform: rotate(180deg);
+}
+.good-text-list {
+  display: flex; flex-direction: column; gap: 8px;
+  flex: 1;
+}
+@keyframes goodTextIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.good-text-card {
+  border-radius: 10px;
+  border: 1.5px solid;
+  padding: 10px 11px;
+  font-size: 12px; line-height: 1.7;
+  font-weight: 500; word-break: keep-all;
+  opacity: 0;
+  animation: goodTextIn 0.35s ease forwards;
+  cursor: default;
+  transition: transform .15s, box-shadow .15s;
+}
+.good-text-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,.08);
+}
 .pano-date {
   font-size: 12px; font-weight: 600; color: var(--text-muted);
   background: var(--surface-3); border: 1px solid var(--border);
