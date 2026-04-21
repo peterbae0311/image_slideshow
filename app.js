@@ -992,6 +992,10 @@ function playBgTrack(idx) {
   npEl.title = rawName.length > 20 ? rawName : '';
   document.getElementById('btn-play').textContent = '⏸';
   document.getElementById('music-icon-anim').classList.add('playing');
+  // Show prev/next only when multiple tracks exist
+  const multi = bgTrackList.length > 1;
+  document.getElementById('btn-music-prev').style.display = multi ? '' : 'none';
+  document.getElementById('btn-music-next').style.display = multi ? '' : 'none';
 }
 
 function stopBgMusic() {
@@ -1849,11 +1853,26 @@ function bindEvents() {
     slideshowEffect = this.value;
   });
 
+  // Left panel collapse toggle
+  document.querySelector('.brand-icon').addEventListener('click', () => {
+    document.querySelector('.left-panel').classList.toggle('collapsed');
+  });
+
   // Music player controls (now in pano-controls inline)
   document.getElementById('btn-play').addEventListener('click', toggleMusicPlay);
   document.getElementById('btn-mute').addEventListener('click', toggleMute);
   document.getElementById('volume-slider').addEventListener('input', function () { setVolume(this.value); });
   document.getElementById('music-progress-wrap').addEventListener('click', seekMusic);
+  document.getElementById('btn-music-prev').addEventListener('click', () => {
+    if (bgTrackList.length < 2) return;
+    bgTrackIdx = (bgTrackIdx - 1 + bgTrackList.length) % bgTrackList.length;
+    playBgTrack(bgTrackIdx);
+  });
+  document.getElementById('btn-music-next').addEventListener('click', () => {
+    if (bgTrackList.length < 2) return;
+    bgTrackIdx = (bgTrackIdx + 1) % bgTrackList.length;
+    playBgTrack(bgTrackIdx);
+  });
 
   // Music picker sub-modal
   initMusicPickerModal();

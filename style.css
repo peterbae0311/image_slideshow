@@ -343,6 +343,36 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 3px 0 24px rgba(124,58,237,.08);
   position: relative;
   z-index: 1;
+  transition: width .35s cubic-bezier(.4,0,.2,1), min-width .35s cubic-bezier(.4,0,.2,1), max-width .35s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+
+/* Collapsed state */
+.left-panel.collapsed {
+  width: 56px;
+  min-width: 56px;
+  max-width: 56px;
+}
+.left-panel.collapsed .brand-name,
+.left-panel.collapsed .btn-add,
+.left-panel.collapsed .list-header,
+.left-panel.collapsed .record-list,
+.left-panel.collapsed .left-footer,
+.left-panel.collapsed .left-bottom {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.left-panel.collapsed .left-header {
+  justify-content: center;
+  padding: 20px 9px 16px;
+}
+.brand-icon {
+  cursor: pointer;
+}
+.brand-icon:hover {
+  transform: scale(1.08);
+  transition: transform .2s;
 }
 
 /* Subtle left panel gradient overlay */
