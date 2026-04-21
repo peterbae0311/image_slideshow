@@ -751,12 +751,11 @@ function applySlideTransition(inEl, outEl, direction) {
     el.style.filter     = '';
     el.style.transformOrigin = '';
   });
-  // Clear inEl clip (wipe needs a clean start); outEl keeps its self-clip to prevent ghosting
-  inEl.style.clipPath = '';
-  // Force reflow
+  // Restore self-clips on BOTH layers (cleanup timer clears outEl's clip each transition)
+  inEl.style.clipPath  = inEl.dataset.imgClip  || '';
+  outEl.style.clipPath = outEl.dataset.imgClip || '';
+  // Force reflow so CSS transitions animate from the set state
   inEl.getBoundingClientRect();
-  // Re-apply inEl self-clip; wipe effect will override this with its own clip below
-  if (inEl.dataset.imgClip) inEl.style.clipPath = inEl.dataset.imgClip;
 
   switch (slideshowEffect) {
     case 'fade':
