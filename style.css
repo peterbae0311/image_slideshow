@@ -1550,28 +1550,29 @@ a { text-decoration: none; color: inherit; }
 }
 
 @keyframes gtSlideIn {
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(22px); }
   to   { opacity: 1; transform: translateY(0); }
 }
 @keyframes gtSlideOut {
   from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(-28px); }
+  to   { opacity: 0; transform: translateY(-22px); }
 }
 
 .good-text-rolling-card {
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1.9;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 2.0;
   text-align: center;
   word-break: keep-all;
-  padding: 0 4px;
+  padding: 0 6px;
   opacity: 0;
+  letter-spacing: 0.01em;
 }
 .good-text-rolling-card.gt-in {
-  animation: gtSlideIn 0.5s cubic-bezier(.4,0,.2,1) forwards;
+  animation: gtSlideIn 0.7s cubic-bezier(.22,1,.36,1) forwards;
 }
 .good-text-rolling-card.gt-out {
-  animation: gtSlideOut 0.5s cubic-bezier(.4,0,.2,1) forwards;
+  animation: gtSlideOut 0.7s cubic-bezier(.4,0,1,1) forwards;
 }
 .pano-date {
   font-size: 12px; font-weight: 600; color: var(--text-muted);
