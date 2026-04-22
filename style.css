@@ -336,22 +336,30 @@ a { text-decoration: none; color: inherit; }
    ============================================================ */
 .left-panel {
   width: var(--left-w);
-  min-width: 260px; max-width: 360px;
+  min-width: 0; /* min-width를 트랜지션에서 제외해 레이아웃 재계산 충돌 방지 */
+  max-width: 360px;
   background: linear-gradient(180deg, #fefeff 0%, #f9f7ff 100%);
   border-right: 1px solid var(--border-light);
   display: flex; flex-direction: column;
   box-shadow: 3px 0 24px rgba(124,58,237,.08);
   position: relative;
   z-index: 1;
-  transition: width .35s cubic-bezier(.4,0,.2,1), min-width .35s cubic-bezier(.4,0,.2,1), max-width .35s cubic-bezier(.4,0,.2,1);
+  transition: width .38s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
+  flex-shrink: 0; /* 우측 패널이 밀지 못하도록 고정 */
 }
 
 /* Collapsed state */
 .left-panel.collapsed {
-  width: 56px;
-  min-width: 56px;
-  max-width: 56px;
+  width: 52px;
+}
+.brand-name,
+.btn-add,
+.list-header,
+.record-list,
+.left-footer,
+.left-bottom {
+  transition: opacity .2s ease;
 }
 .left-panel.collapsed .brand-name,
 .left-panel.collapsed .btn-add,
@@ -361,11 +369,14 @@ a { text-decoration: none; color: inherit; }
 .left-panel.collapsed .left-bottom {
   opacity: 0;
   pointer-events: none;
-  transition: opacity .2s;
 }
 .left-panel.collapsed .left-header {
   justify-content: center;
-  padding: 20px 9px 16px;
+  padding: 10px 7px;
+  border-bottom: none;
+}
+.left-panel.collapsed .left-header::after {
+  display: none;
 }
 .brand-icon {
   cursor: pointer;
@@ -384,6 +395,11 @@ a { text-decoration: none; color: inherit; }
   background: linear-gradient(180deg, var(--primary-bg) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
+  opacity: 1;
+  transition: opacity .2s;
+}
+.left-panel.collapsed::after {
+  opacity: 0;
 }
 
 .left-header {
