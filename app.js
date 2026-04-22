@@ -481,14 +481,10 @@ function handleEditAlbum(event, albumId) {
 async function handleAiAnalyze(event, albumId) {
   event.stopPropagation();
   if (selectedAlbum?.id !== albumId) {
-    // 다른 앨범 — 선택 후 이동 (슬라이드·음악 재시작은 불가피)
     selectAlbum(albumId);
     await new Promise(r => setTimeout(r, 80));
-  } else {
-    // 같은 앨범 — 슬라이드·음악 그대로, 우측 패널만 업데이트
-    document.getElementById('empty-right').style.display = 'none';
-    document.getElementById('panorama-view').style.display = 'flex';
   }
+  // 버튼 클릭 시 항상 새 글로 새로고침 (슬라이드·음악은 그대로)
   generateGoodTexts();
 }
 
@@ -540,19 +536,6 @@ function renderPanoramaView() {
   const dateEl = document.getElementById('pano-date');
   if (dateEl) dateEl.textContent = album.album_date ? album.album_date.slice(0, 7) : '';
 
-  // AI 패널: 저장된 분석 결과 로드 또는 빈 상태 표시
-  const aiPanel = document.getElementById('pano-ai-panel');
-  if (aiPanel) {
-    if (album.ai_analysis) {
-      renderAiPanel(album.ai_analysis, null);
-    } else {
-      aiPanel.innerHTML = `<div class="pano-ai-empty">
-        <div class="pano-ai-empty-icon">🤖</div>
-        <p>좋은 글 버튼을<br>눌러주세요</p>
-      </div>`;
-    }
-  }
-
   // Build panorama strip
   buildPanoramaStrip(album.photos);
 
@@ -562,6 +545,9 @@ function renderPanoramaView() {
   } else {
     stopBgMusic();
   }
+
+  // 좋은 글 자동 시작
+  generateGoodTexts();
 }
 
 // ============================================================
