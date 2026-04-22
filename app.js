@@ -1006,12 +1006,44 @@ function initPanoDrag() {
 // ============================================================
 // 9. MUSIC PLAYER
 // ============================================================
-let bgTrackList = [];
-let bgTrackIdx  = 0;
+let bgTrackList    = [];
+let bgTrackIdx     = 0;
+let bgShuffleOn    = false;
+let bgShuffleQueue = []; // remaining indices for current shuffle cycle
+
+function _nextShuffleIdx() {
+  if (bgShuffleQueue.length === 0) {
+    // refill: all indices except current
+    bgShuffleQueue = Array.from({ length: bgTrackList.length }, (_, i) => i)
+      .filter(i => i !== bgTrackIdx);
+    // shuffle
+    for (let i = bgShuffleQueue.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [bgShuffleQueue[i], bgShuffleQueue[j]] = [bgShuffleQueue[j], bgShuffleQueue[i]];
+    }
+    if (bgShuffleQueue.length === 0) bgShuffleQueue = [bgTrackIdx]; // single-track edge case
+  }
+  return bgShuffleQueue.shift();
+}
+
+function _prevShuffleIdx() {
+  // For prev during shuffle: just go to a random different track
+  const others = Array.from({ length: bgTrackList.length }, (_, i) => i).filter(i => i !== bgTrackIdx);
+  if (others.length === 0) return bgTrackIdx;
+  return others[Math.floor(Math.random() * others.length)];
+}
+
+function toggleShuffle() {
+  bgShuffleOn = !bgShuffleOn;
+  bgShuffleQueue = [];
+  const btn = document.getElementById('btn-music-shuffle');
+  if (btn) btn.classList.toggle('shuffle-active', bgShuffleOn);
+}
 
 function startBgMusic(album) {
   stopBgMusic();
-  bgTrackList = album.music_list || [];
+  bgTrackList    = album.music_list || [];
+  bgShuffleQueue = [];
   if (bgTrackList.length === 0) return;
   bgTrackIdx = 0;
   playBgTrack(bgTrackIdx);
@@ -1027,7 +1059,11 @@ function playBgTrack(idx) {
   bgAudio.play().catch(() => {});
 
   bgAudio.addEventListener('ended', () => {
-    bgTrackIdx = (bgTrackIdx + 1) % bgTrackList.length;
+    if (bgShuffleOn && bgTrackList.length > 1) {
+      bgTrackIdx = _nextShuffleIdx();
+    } else {
+      bgTrackIdx = (bgTrackIdx + 1) % bgTrackList.length;
+    }
     playBgTrack(bgTrackIdx);
   });
   bgAudio.addEventListener('timeupdate', updateMusicProgress);
@@ -1043,10 +1079,15 @@ function playBgTrack(idx) {
   npEl.title = rawName.length > 20 ? rawName : '';
   document.getElementById('btn-play').textContent = '⏸';
   document.getElementById('music-icon-anim').classList.add('playing');
-  // Show prev/next only when multiple tracks exist
+  // Show prev/next/shuffle only when multiple tracks exist
   const multi = bgTrackList.length > 1;
-  document.getElementById('btn-music-prev').style.display = multi ? '' : 'none';
-  document.getElementById('btn-music-next').style.display = multi ? '' : 'none';
+  document.getElementById('btn-music-prev').style.display    = multi ? '' : 'none';
+  document.getElementById('btn-music-next').style.display    = multi ? '' : 'none';
+  document.getElementById('btn-music-shuffle').style.display = multi ? '' : 'none';
+  if (multi) {
+    const shuffleBtn = document.getElementById('btn-music-shuffle');
+    if (shuffleBtn) shuffleBtn.classList.toggle('shuffle-active', bgShuffleOn);
+  }
 }
 
 function stopBgMusic() {
@@ -1063,6 +1104,7 @@ function stopBgMusic() {
   if (cur) cur.textContent = '0:00';
   const tot = document.getElementById('music-total-time');
   if (tot) tot.textContent = '-:--';
+  document.getElementById('btn-music-shuffle').style.display = 'none';
 }
 
 function toggleMusicPlay() {
@@ -1917,14 +1959,15 @@ function bindEvents() {
   document.getElementById('music-progress-wrap').addEventListener('click', seekMusic);
   document.getElementById('btn-music-prev').addEventListener('click', () => {
     if (bgTrackList.length < 2) return;
-    bgTrackIdx = (bgTrackIdx - 1 + bgTrackList.length) % bgTrackList.length;
+    bgTrackIdx = bgShuffleOn ? _prevShuffleIdx() : (bgTrackIdx - 1 + bgTrackList.length) % bgTrackList.length;
     playBgTrack(bgTrackIdx);
   });
   document.getElementById('btn-music-next').addEventListener('click', () => {
     if (bgTrackList.length < 2) return;
-    bgTrackIdx = (bgTrackIdx + 1) % bgTrackList.length;
+    bgTrackIdx = bgShuffleOn ? _nextShuffleIdx() : (bgTrackIdx + 1) % bgTrackList.length;
     playBgTrack(bgTrackIdx);
   });
+  document.getElementById('btn-music-shuffle').addEventListener('click', toggleShuffle);
 
   // Music picker sub-modal
   initMusicPickerModal();
