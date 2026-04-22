@@ -1934,9 +1934,21 @@ function bindEvents() {
   });
 
   // Left panel collapse toggle
-  document.querySelector('.brand-icon').addEventListener('click', () => {
-    document.querySelector('.left-panel').classList.toggle('collapsed');
-  });
+  const leftPanel   = document.querySelector('.left-panel');
+  const floatBtn    = document.getElementById('panel-float-btn');
+
+  function collapsePanel() {
+    leftPanel.classList.add('collapsed');
+    // 트랜지션 끝난 뒤 플로팅 버튼 표시 (width 트랜지션 시간과 맞춤)
+    setTimeout(() => floatBtn.classList.add('visible'), 300);
+  }
+  function expandPanel() {
+    floatBtn.classList.remove('visible');
+    leftPanel.classList.remove('collapsed');
+  }
+
+  document.getElementById('btn-collapse-panel').addEventListener('click', collapsePanel);
+  floatBtn.addEventListener('click', expandPanel);
 
   // Music player controls (now in pano-controls inline)
   document.getElementById('btn-play').addEventListener('click', toggleMusicPlay);

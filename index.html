@@ -180,13 +180,20 @@
 </div>
 
 <!-- ===================== MAIN APP ===================== -->
+<!-- 플로팅 패널 토글 버튼 (접혔을 때 표시) -->
+<button id="panel-float-btn" class="panel-float-btn" title="패널 펼치기" style="display:none">
+  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+</button>
+
 <div class="app-container">
 
   <!-- LEFT PANEL 30% -->
   <aside class="left-panel">
     <div class="left-header">
       <div class="brand">
-        <span class="brand-icon">🌅</span>
+        <button class="brand-icon-btn" id="btn-collapse-panel" title="패널 접기">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:.7"><rect x="3" y="3" width="18" height="18" rx="3"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
+        </button>
         <span class="brand-name">앨범</span>
       </div>
       <button id="btn-add" class="btn-add">

@@ -336,7 +336,7 @@ a { text-decoration: none; color: inherit; }
    ============================================================ */
 .left-panel {
   width: var(--left-w);
-  min-width: 0; /* min-width를 트랜지션에서 제외해 레이아웃 재계산 충돌 방지 */
+  min-width: 0;
   max-width: 360px;
   background: linear-gradient(180deg, #fefeff 0%, #f9f7ff 100%);
   border-right: 1px solid var(--border-light);
@@ -344,46 +344,67 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 3px 0 24px rgba(124,58,237,.08);
   position: relative;
   z-index: 1;
-  transition: width .38s cubic-bezier(.4,0,.2,1);
+  transition: width .36s cubic-bezier(.4,0,.2,1),
+              opacity .28s ease,
+              box-shadow .36s ease;
   overflow: hidden;
-  flex-shrink: 0; /* 우측 패널이 밀지 못하도록 고정 */
+  flex-shrink: 0;
 }
 
-/* Collapsed state */
+/* Collapsed — 완전히 숨김 */
 .left-panel.collapsed {
-  width: 52px;
+  width: 0;
+  opacity: 0;
+  box-shadow: none;
+  border-right-color: transparent;
 }
-.brand-name,
-.btn-add,
-.list-header,
-.record-list,
-.left-footer,
-.left-bottom {
-  transition: opacity .2s ease;
+
+/* 패널 접기 버튼 (헤더 내 작은 아이콘) */
+.brand-icon-btn {
+  width: 28px; height: 28px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--t), color var(--t), transform var(--t);
+  flex-shrink: 0;
 }
-.left-panel.collapsed .brand-name,
-.left-panel.collapsed .btn-add,
-.left-panel.collapsed .list-header,
-.left-panel.collapsed .record-list,
-.left-panel.collapsed .left-footer,
-.left-panel.collapsed .left-bottom {
+.brand-icon-btn:hover {
+  background: var(--primary-bg);
+  color: var(--primary);
+  transform: scale(1.1);
+}
+
+/* 플로팅 패널 열기 버튼 */
+.panel-float-btn {
+  position: fixed;
+  left: 0; top: 50%;
+  transform: translateY(-50%);
+  z-index: 200;
+  width: 24px; height: 48px;
+  border-radius: 0 var(--r) var(--r) 0;
+  background: var(--surface);
+  border: 1px solid var(--border-light);
+  border-left: none;
+  box-shadow: 2px 0 12px rgba(124,58,237,.12);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--t), color var(--t), width var(--t), box-shadow var(--t);
   opacity: 0;
   pointer-events: none;
 }
-.left-panel.collapsed .left-header {
-  justify-content: center;
-  padding: 10px 7px;
-  border-bottom: none;
+.panel-float-btn.visible {
+  opacity: 1;
+  pointer-events: auto;
 }
-.left-panel.collapsed .left-header::after {
-  display: none;
-}
-.brand-icon {
-  cursor: pointer;
-}
-.brand-icon:hover {
-  transform: scale(1.08);
-  transition: transform .2s;
+.panel-float-btn:hover {
+  background: var(--primary-bg);
+  color: var(--primary);
+  width: 30px;
+  box-shadow: 3px 0 16px rgba(124,58,237,.2);
 }
 
 /* Subtle left panel gradient overlay */
@@ -395,11 +416,6 @@ a { text-decoration: none; color: inherit; }
   background: linear-gradient(180deg, var(--primary-bg) 0%, transparent 100%);
   pointer-events: none;
   z-index: 0;
-  opacity: 1;
-  transition: opacity .2s;
-}
-.left-panel.collapsed::after {
-  opacity: 0;
 }
 
 .left-header {
@@ -410,25 +426,17 @@ a { text-decoration: none; color: inherit; }
   position: relative; z-index: 1;
 }
 
-.brand { display: flex; align-items: center; gap: 10px; }
-.brand-icon {
-  font-size: 22px;
-  width: 38px; height: 38px;
-  background: var(--grad-brand);
-  border-radius: var(--r);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 3px 10px var(--primary-glow);
-  flex-shrink: 0;
-}
+.brand { display: flex; align-items: center; gap: 8px; }
 .brand-name {
   font-family: 'Outfit', var(--font);
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 800;
   letter-spacing: -.03em;
   background: var(--grad-brand);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  white-space: nowrap;
 }
 
 .btn-add {
