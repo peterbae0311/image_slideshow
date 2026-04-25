@@ -515,9 +515,9 @@ a { text-decoration: none; color: inherit; }
 
 /* Record cards */
 .record-card {
-  padding: 13px 14px; border-radius: var(--r-lg);
+  padding: 8px 11px; border-radius: var(--r-lg);
   cursor: pointer; transition: all var(--t);
-  margin-bottom: 7px; border: 1.5px solid var(--border-light);
+  margin-bottom: 4px; border: 1.5px solid var(--border-light);
   background: var(--surface);
   position: relative;
   box-shadow: 0 1px 6px rgba(124,58,237,.05);
@@ -543,9 +543,9 @@ a { text-decoration: none; color: inherit; }
 }
 
 .record-card-name {
-  font-weight: 700; font-size: 13.5px; color: var(--text);
+  font-weight: 700; font-size: 12.5px; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  margin-bottom: 6px;
+  margin-bottom: 3px;
   padding-right: 28px;
 }
 .record-card.active .record-card-name { color: var(--primary-dark); }
@@ -555,11 +555,11 @@ a { text-decoration: none; color: inherit; }
   display: flex; gap: 8px; align-items: center;
 }
 .record-card-photo-count {
-  font-size: 11.5px; color: var(--text-muted);
+  font-size: 11px; color: var(--text-muted);
   display: flex; align-items: center; gap: 4px;
 }
 .record-card-music {
-  font-size: 11.5px; color: var(--text-muted);
+  font-size: 11px; color: var(--text-muted);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   max-width: 120px;
 }
@@ -612,21 +612,21 @@ a { text-decoration: none; color: inherit; }
 
 /* Thumbnails in card */
 .record-card-thumbs {
-  display: flex; gap: 5px; margin-top: 10px;
+  display: flex; gap: 4px; margin-top: 6px;
 }
 .record-card-thumb {
-  width: 40px; height: 40px; border-radius: var(--r);
+  width: 28px; height: 28px; border-radius: var(--r);
   object-fit: cover; border: 1.5px solid rgba(124,58,237,.12);
   transition: all var(--t);
   box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
 .record-card:hover .record-card-thumb { transform: scale(1.06); box-shadow: 0 3px 8px rgba(0,0,0,.12); }
 .record-card-thumb-more {
-  width: 40px; height: 40px; border-radius: var(--r);
+  width: 28px; height: 28px; border-radius: var(--r);
   background: var(--grad-brand);
   border: 1.5px solid rgba(124,58,237,.2);
   display: flex; align-items: center; justify-content: center;
-  font-size: 11px; color: #fff; font-weight: 700;
+  font-size: 10px; color: #fff; font-weight: 700;
   box-shadow: 0 1px 4px rgba(124,58,237,.25);
 }
 
@@ -879,9 +879,9 @@ a { text-decoration: none; color: inherit; }
 
 /* ── 좌측 썸네일 목록 ── */
 .pano-thumb-list {
-  width: 148px; flex-shrink: 0;
+  width: 96px; flex-shrink: 0;
   overflow-y: auto; overflow-x: hidden;
-  display: flex; flex-direction: column; gap: 10px;
+  display: flex; flex-direction: column; gap: 7px;
   padding-right: 4px;
   scrollbar-width: thin;
 }
@@ -1477,7 +1477,7 @@ a { text-decoration: none; color: inherit; }
    ============================================================ */
 /* ── 우측 좋은 글 패널 ── */
 .pano-ai-panel {
-  width: 224px; flex-shrink: 0;
+  width: 310px; flex-shrink: 0;
   border-radius: var(--r-xl);
   background: linear-gradient(170deg,
     rgba(255,255,255,.96) 0%,
@@ -1671,9 +1671,9 @@ a { text-decoration: none; color: inherit; }
 
 .good-text-rolling-card {
   font-family: 'Noto Sans KR', sans-serif;
-  font-size: 15px;
+  font-size: 17px;
   font-weight: 400;
-  line-height: 2.15;
+  line-height: 2.0;
   text-align: center;
   word-break: keep-all;
   padding: 0 2px;
@@ -1690,7 +1690,7 @@ a { text-decoration: none; color: inherit; }
 }
 .gt-source {
   margin: 0;
-  font-size: 12px;
+  font-size: 13.5px;
   font-weight: 500;
   letter-spacing: 0.04em;
   opacity: 0.52;
