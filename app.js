@@ -451,7 +451,7 @@ function renderAlbumList() {
                  data-id="${album.id}" onclick="selectAlbum('${album.id}')">
       <div class="record-card-name">${datePfx ? `<span class="record-date-prefix">${escHtml(datePfx)}</span>` : ''}${escHtml(album.name)}</div>
       <div class="record-card-meta">
-        <span class="record-card-photo-count">📷 ${album.photos.length}장</span>
+        <span class="record-card-photo-count"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>${album.photos.length}장</span>
         ${album.music_list?.length > 0 ? (() => {
           const names = album.music_list.map(m => m.name || '제목 없음');
           const label = names.length === 1
@@ -459,7 +459,7 @@ function renderAlbumList() {
             : `${names[0]} 외 ${names.length - 1}곡`;
           const full  = names.join(', ');
           const disp  = label.length > 18 ? label.slice(0, 18) + '…' : label;
-          return `<span class="record-card-music" title="${escHtml(full)}">🎵 ${escHtml(disp)}</span>`;
+          return `<span class="record-card-music" title="${escHtml(full)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>${escHtml(disp)}</span>`;
         })() : ''}
       </div>
       ${thumbs || moreHtml ? `<div class="record-card-thumbs">${thumbs}${moreHtml}</div>` : ''}
