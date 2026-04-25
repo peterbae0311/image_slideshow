@@ -546,7 +546,7 @@ a { text-decoration: none; color: inherit; }
   font-weight: 700; font-size: 13.5px; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 3px;
-  padding-right: 64px;
+  padding-right: 56px;
 }
 .record-card.active .record-card-name { color: var(--primary-dark); }
 .record-date-prefix {
@@ -572,15 +572,15 @@ a { text-decoration: none; color: inherit; }
   display: flex; align-items: center; gap: 3px;
 }
 
-/* AI 분석 버튼 — 카드 우상단 */
+/* AI 분석 버튼 — 카드 하단 인라인 */
 .btn-card-ai {
-  position: absolute; top: 8px; right: 8px;
+  display: inline-flex; align-items: center;
+  margin-top: 8px;
   font-size: 11.5px; font-weight: 700; color: var(--primary);
   background: var(--primary-bg);
   border: 1.5px solid rgba(124,58,237,.22);
   border-radius: var(--r-full);
-  padding: 4px 11px;
-  display: inline-flex; align-items: center;
+  padding: 4px 14px;
   transition: all var(--t); cursor: pointer;
   white-space: nowrap; line-height: 1.4;
   min-height: 26px;
@@ -591,8 +591,6 @@ a { text-decoration: none; color: inherit; }
   box-shadow: 0 3px 10px var(--primary-glow);
 }
 .btn-card-ai:active { transform: scale(.96); }
-/* 호버 시 액션 버튼이 같은 위치에서 대신 나타남 */
-.record-card:hover .btn-card-ai { opacity: 0; pointer-events: none; }
 
 .record-card-actions {
   position: absolute; right: 8px; top: 8px;
