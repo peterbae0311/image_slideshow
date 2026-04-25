@@ -2137,40 +2137,51 @@ function generateGoodTexts() {
           <p class="gt-source"></p>
         </div>
       </div>
+      <!-- 네비게이션 -->
       <div class="good-text-nav">
-        <button class="good-text-nav-btn" id="gt-btn-prev" title="이전">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        <button class="gt-nav-arrow" id="gt-btn-prev" title="이전">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div class="good-text-nav-dots" id="gt-dots"></div>
-        <button class="good-text-nav-btn" id="gt-btn-pause" title="일시정지">
-          <svg id="gt-pause-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
-          <svg id="gt-play-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <button class="gt-nav-play" id="gt-btn-pause" title="일시정지">
+          <svg id="gt-pause-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="4" width="4" height="16" rx="1.5"/><rect x="15" y="4" width="4" height="16" rx="1.5"/></svg>
+          <svg id="gt-play-icon" width="22" height="22" viewBox="0 0 24 24" fill="currentColor" style="display:none"><polygon points="6 3 20 12 6 21 6 3"/></svg>
         </button>
-        <button class="good-text-nav-btn" id="gt-btn-next" title="다음">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        <button class="gt-nav-arrow" id="gt-btn-next" title="다음">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
+
       <!-- TTS 컨트롤 -->
       <div class="good-text-tts">
-        <div class="gt-tts-row1">
-          <button class="gt-tts-toggle${ttsActive ? ' tts-active' : ''}" id="gt-btn-tts" title="음성 읽기">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="gt-tts-header">
+          <span class="gt-tts-label">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
               <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-              <path id="gt-tts-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14" ${ttsActive ? '' : 'style="display:none"'}/>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
             </svg>
+            음성 읽기
+          </span>
+          <button class="gt-tts-toggle${ttsActive ? ' tts-active' : ''}" id="gt-btn-tts" title="음성 읽기 ON/OFF">
+            <span class="gt-tts-track"><span class="gt-tts-thumb"></span></span>
+            <span class="gt-tts-onoff">${ttsActive ? 'ON' : 'OFF'}</span>
           </button>
-          <select class="gt-select-sm gt-voice-sel" id="gt-voice-select" title="음성 유형">
-            <option value="-1">기본 음성</option>
-          </select>
         </div>
-        <div class="gt-tts-row2">
-          <svg class="gt-vol-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <select class="gt-voice-sel" id="gt-voice-select" title="음성 유형">
+          <option value="-1">기본 음성</option>
+        </select>
+        <div class="gt-vol-row">
+          <svg class="gt-vol-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
           </svg>
           <input type="range" class="gt-vol-slider" id="gt-vol-slider" min="0" max="1" step="0.05" value="1" title="음성 크기">
-          <select class="gt-select-sm gt-rate-sel" id="gt-rate-select" title="읽기 속도">
+          <span class="gt-vol-pct" id="gt-vol-pct">100%</span>
+        </div>
+        <div class="gt-speed-row">
+          <span class="gt-speed-label">속도</span>
+          <select class="gt-rate-sel" id="gt-rate-select" title="읽기 속도">
             <option value="0.6">0.6×</option>
             <option value="0.8">0.8×</option>
             <option value="1.0" selected>1.0×</option>
@@ -2338,12 +2349,14 @@ function generateGoodTexts() {
     }
   });
 
-  // ── 볼륨 슬라이더 트랙 색상 업데이트 ──
+  // ── 볼륨 슬라이더 트랙 + % 표시 업데이트 ──
   const volSlider = panel.querySelector('#gt-vol-slider');
   function updateVolTrack() {
     const pct = Math.round(parseFloat(volSlider.value) * 100);
     volSlider.style.background =
       `linear-gradient(to right, var(--primary) ${pct}%, var(--border) ${pct}%)`;
+    const pctEl = panel.querySelector('#gt-vol-pct');
+    if (pctEl) pctEl.textContent = pct + '%';
   }
   volSlider.addEventListener('input', updateVolTrack);
   updateVolTrack();
@@ -2351,10 +2364,10 @@ function generateGoodTexts() {
   // ── TTS 토글 ──
   panel.querySelector('#gt-btn-tts').addEventListener('click', () => {
     ttsActive = !ttsActive;
-    const btn  = panel.querySelector('#gt-btn-tts');
-    const wave = panel.querySelector('#gt-tts-wave');
+    const btn = panel.querySelector('#gt-btn-tts');
     btn.classList.toggle('tts-active', ttsActive);
-    if (wave) wave.style.display = ttsActive ? '' : 'none';
+    const onoff = btn.querySelector('.gt-tts-onoff');
+    if (onoff) onoff.textContent = ttsActive ? 'ON' : 'OFF';
 
     if (ttsActive) {
       if (goodTextsTimer) { clearInterval(goodTextsTimer); goodTextsTimer = null; }
