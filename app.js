@@ -462,8 +462,10 @@ function renderAlbumList() {
           return `<span class="record-card-music" title="${escHtml(full)}"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>${escHtml(disp)}</span>`;
         })() : ''}
       </div>
-      ${thumbs || moreHtml ? `<div class="record-card-thumbs">${thumbs}${moreHtml}</div>` : ''}
-      <button class="btn-card-ai" onclick="handleAiAnalyze(event,'${album.id}')">좋은 글</button>
+      <div class="record-card-bottom">
+        <div class="record-card-thumbs">${thumbs}${moreHtml}</div>
+        <button class="btn-card-ai" onclick="handleAiAnalyze(event,'${album.id}')">좋은 글</button>
+      </div>
       <div class="record-card-actions">
         <button class="record-card-edit"   onclick="handleEditAlbum(event,'${album.id}')"   title="수정">✏️</button>
         <button class="record-card-delete" onclick="handleDeleteAlbum(event,'${album.id}')" title="삭제">✕</button>
