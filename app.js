@@ -20,6 +20,7 @@ let previewAudio   = null;
 let previewTimer   = null;
 let bgAudio        = null;
 let goodTextsTimer = null;
+let ttsActive      = false; // persists across generateGoodTexts calls
 let panoScrollAnim   = null; // legacy, unused
 let isDragging       = false;
 let dragStartX       = 0;
@@ -2122,9 +2123,10 @@ function generateGoodTexts() {
   if (!panel) return;
 
   if (goodTextsTimer) { clearInterval(goodTextsTimer); goodTextsTimer = null; }
+  speechSynthesis.cancel();
 
   const shuffled = [...GOOD_TEXTS].sort(() => Math.random() - 0.5).slice(0, 30);
-  let idx = 0;
+  let idx    = 0;
   let paused = false;
 
   panel.innerHTML = `
@@ -2148,13 +2150,32 @@ function generateGoodTexts() {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
+      <!-- TTS 컨트롤 -->
+      <div class="good-text-tts">
+        <button class="gt-tts-toggle${ttsActive ? ' tts-active' : ''}" id="gt-btn-tts" title="음성 읽기">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path id="gt-tts-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14" ${ttsActive ? '' : 'style="display:none"'}/>
+          </svg>
+        </button>
+        <select class="gt-select-sm" id="gt-voice-select" title="음성 유형">
+          <option value="-1">기본 음성</option>
+        </select>
+        <select class="gt-select-sm" id="gt-rate-select" title="읽기 속도">
+          <option value="0.6">0.6×</option>
+          <option value="0.8">0.8×</option>
+          <option value="1.0" selected>1.0×</option>
+          <option value="1.2">1.2×</option>
+          <option value="1.5">1.5×</option>
+        </select>
+      </div>
     </div>`;
 
   const card    = panel.querySelector('.good-text-rolling-card');
   const dotsEl  = panel.querySelector('#gt-dots');
   const DOT_COUNT = Math.min(5, shuffled.length);
 
-  // Build indicator dots
   for (let i = 0; i < DOT_COUNT; i++) {
     const d = document.createElement('div');
     d.className = 'good-text-nav-dot' + (i === 0 ? ' active' : '');
@@ -2162,9 +2183,54 @@ function generateGoodTexts() {
   }
 
   function updateDots(i) {
-    const dots = dotsEl.querySelectorAll('.good-text-nav-dot');
-    dots.forEach((d, j) => d.classList.toggle('active', j === i % DOT_COUNT));
+    dotsEl.querySelectorAll('.good-text-nav-dot').forEach((d, j) =>
+      d.classList.toggle('active', j === i % DOT_COUNT));
   }
+
+  // ── 음성 목록 로드 ──
+  function populateVoices() {
+    const sel = panel.querySelector('#gt-voice-select');
+    if (!sel) return;
+    const all = speechSynthesis.getVoices();
+    const ko  = all.filter(v => v.lang.startsWith('ko'));
+    sel._voices = [...ko, ...all.filter(v => !v.lang.startsWith('ko'))];
+    sel.innerHTML = '<option value="-1">기본 음성</option>';
+    if (ko.length) {
+      const grp = document.createElement('optgroup');
+      grp.label = '한국어';
+      ko.forEach((v, i) => {
+        const o = document.createElement('option');
+        o.value = i; o.textContent = v.name;
+        grp.appendChild(o);
+      });
+      sel.appendChild(grp);
+    }
+    if (ko.length) sel.value = '0'; // 한국어 음성 기본 선택
+  }
+  populateVoices();
+  speechSynthesis.addEventListener('voiceschanged', populateVoices, { once: true });
+
+  // ── TTS 발화 ──
+  function speakText(text) {
+    speechSynthesis.cancel();
+    const sel   = panel.querySelector('#gt-voice-select');
+    const rSel  = panel.querySelector('#gt-rate-select');
+    const vi    = parseInt(sel?.value ?? '-1');
+    const rate  = parseFloat(rSel?.value ?? '1.0');
+    const utt   = new SpeechSynthesisUtterance(text);
+    utt.lang    = 'ko-KR';
+    utt.rate    = rate;
+    if (vi >= 0 && sel._voices?.[vi]) utt.voice = sel._voices[vi];
+    utt.onend = () => {
+      if (ttsActive && !paused) {
+        goTo(idx + 1); // TTS 완료 후 다음 글로
+      }
+    };
+    speechSynthesis.speak(utt);
+  }
+
+  const OUT_MS  = 550;
+  const SHOW_MS = 10000;
 
   function show(item, color) {
     card.querySelector('.gt-body').textContent   = item.text;
@@ -2173,10 +2239,10 @@ function generateGoodTexts() {
     card.classList.remove('gt-out');
     void card.offsetWidth;
     card.classList.add('gt-in');
+    if (ttsActive && !paused) {
+      setTimeout(() => speakText(item.text), 900); // 애니메이션 후 발화
+    }
   }
-
-  const OUT_MS  = 550;
-  const SHOW_MS = 10000;
 
   function goTo(newIdx) {
     idx = ((newIdx % shuffled.length) + shuffled.length) % shuffled.length;
@@ -2190,31 +2256,61 @@ function generateGoodTexts() {
 
   function scheduleNext() {
     if (goodTextsTimer) clearInterval(goodTextsTimer);
+    if (ttsActive) return; // TTS 모드에서는 타이머 대신 onend가 제어
     goodTextsTimer = setInterval(() => {
       if (!paused) goTo(idx + 1);
     }, SHOW_MS + OUT_MS);
   }
 
-  // Controls
+  // ── 컨트롤 이벤트 ──
   panel.querySelector('#gt-btn-prev').addEventListener('click', () => {
+    speechSynthesis.cancel();
     goTo(idx - 1);
-    scheduleNext();
+    if (!ttsActive) scheduleNext();
   });
   panel.querySelector('#gt-btn-next').addEventListener('click', () => {
+    speechSynthesis.cancel();
     goTo(idx + 1);
-    scheduleNext();
+    if (!ttsActive) scheduleNext();
   });
   panel.querySelector('#gt-btn-pause').addEventListener('click', () => {
     paused = !paused;
-    document.getElementById('gt-pause-icon').style.display = paused ? 'none' : '';
-    document.getElementById('gt-play-icon').style.display  = paused ? ''     : 'none';
+    panel.querySelector('#gt-pause-icon').style.display = paused ? 'none' : '';
+    panel.querySelector('#gt-play-icon').style.display  = paused ? ''     : 'none';
+    if (paused) {
+      speechSynthesis.pause();
+    } else {
+      speechSynthesis.resume();
+      // 재개 시 TTS가 멈춰 있으면 현재 텍스트 다시 발화
+      if (ttsActive && !speechSynthesis.speaking) {
+        const t = card.querySelector('.gt-body')?.textContent;
+        if (t) speakText(t);
+      }
+    }
   });
 
-  // Show first card immediately
+  // ── TTS 토글 ──
+  panel.querySelector('#gt-btn-tts').addEventListener('click', () => {
+    ttsActive = !ttsActive;
+    const btn  = panel.querySelector('#gt-btn-tts');
+    const wave = panel.querySelector('#gt-tts-wave');
+    btn.classList.toggle('tts-active', ttsActive);
+    if (wave) wave.style.display = ttsActive ? '' : 'none';
+
+    if (ttsActive) {
+      if (goodTextsTimer) { clearInterval(goodTextsTimer); goodTextsTimer = null; }
+      const t = card.querySelector('.gt-body')?.textContent;
+      if (t) speakText(t);
+    } else {
+      speechSynthesis.cancel();
+      scheduleNext();
+    }
+  });
+
+  // ── 첫 번째 글 표시 ──
   show(shuffled[0], GOOD_TEXT_COLORS[0]);
   updateDots(0);
   idx = 1;
-
   scheduleNext();
 }
 
