@@ -76,7 +76,7 @@
   --t-spring: 0.3s cubic-bezier(.34,1.56,.64,1);
 
   /* Layout */
-  --left-w:    470px;
+  --left-w:    400px;
   --right-w:   70%;
   --music-h:   72px;
 }
