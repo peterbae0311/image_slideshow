@@ -76,7 +76,7 @@
   --t-spring: 0.3s cubic-bezier(.34,1.56,.64,1);
 
   /* Layout */
-  --left-w:    30%;
+  --left-w:    220px;
   --right-w:   70%;
   --music-h:   72px;
 }
@@ -337,7 +337,6 @@ a { text-decoration: none; color: inherit; }
 .left-panel {
   width: var(--left-w);
   min-width: 0;
-  max-width: 360px;
   background: linear-gradient(180deg, #fefeff 0%, #f9f7ff 100%);
   border-right: 1px solid var(--border-light);
   display: flex; flex-direction: column;
@@ -546,7 +545,7 @@ a { text-decoration: none; color: inherit; }
   font-weight: 700; font-size: 12.5px; color: var(--text);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   margin-bottom: 3px;
-  padding-right: 28px;
+  padding-right: 60px;
 }
 .record-card.active .record-card-name { color: var(--primary-dark); }
 .record-date-prefix { color: var(--primary); font-size: 11.5px; font-weight: 600; margin-right: 2px; }
@@ -564,14 +563,14 @@ a { text-decoration: none; color: inherit; }
   max-width: 120px;
 }
 
-/* AI 분석 버튼 — 카드 우측 절대 위치 */
+/* AI 분석 버튼 — 카드 우상단 */
 .btn-card-ai {
-  position: absolute; bottom: 10px; right: 10px;
-  font-size: 11px; font-weight: 700; color: var(--primary);
+  position: absolute; top: 8px; right: 8px;
+  font-size: 10.5px; font-weight: 700; color: var(--primary);
   background: var(--primary-bg);
   border: 1.5px solid rgba(124,58,237,.22);
   border-radius: var(--r-full);
-  padding: 4px 11px;
+  padding: 3px 9px;
   display: inline-flex; align-items: center;
   transition: all var(--t); cursor: pointer;
   white-space: nowrap; line-height: 1.4;
@@ -580,12 +579,13 @@ a { text-decoration: none; color: inherit; }
   background: var(--grad-brand); color: #fff;
   border-color: transparent;
   box-shadow: 0 3px 10px var(--primary-glow);
-  transform: translateY(-1px);
 }
-.btn-card-ai:active { transform: translateY(0); }
+.btn-card-ai:active { transform: scale(.96); }
+/* 호버 시 액션 버튼이 같은 위치에서 대신 나타남 */
+.record-card:hover .btn-card-ai { opacity: 0; pointer-events: none; }
 
 .record-card-actions {
-  position: absolute; right: 8px; top: 14px;
+  position: absolute; right: 8px; top: 8px;
   display: flex; align-items: center; gap: 4px;
   opacity: 0; transition: opacity var(--t);
 }
