@@ -1707,11 +1707,17 @@ a { text-decoration: none; color: inherit; }
 /* ── TTS 컨트롤 ── */
 .good-text-tts {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 6px 12px 8px;
+  flex-direction: column;
+  gap: 5px;
+  padding: 7px 12px 9px;
   border-top: 1px solid var(--border-light);
   background: transparent;
+}
+.gt-tts-row1,
+.gt-tts-row2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 .gt-tts-toggle {
   display: flex;
@@ -1743,10 +1749,9 @@ a { text-decoration: none; color: inherit; }
   50%       { box-shadow: 0 0 0 5px rgba(109,40,217,.0); }
 }
 .gt-select-sm {
-  flex: 1;
   min-width: 0;
   height: 28px;
-  padding: 0 6px;
+  padding: 0 20px 0 6px;
   font-size: 11px;
   font-family: inherit;
   border: 1.5px solid var(--border);
@@ -1761,11 +1766,46 @@ a { text-decoration: none; color: inherit; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%239ca3af' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 6px center;
-  padding-right: 20px;
 }
 .gt-select-sm:hover,
-.gt-select-sm:focus {
-  border-color: var(--primary-light);
+.gt-select-sm:focus { border-color: var(--primary-light); }
+.gt-voice-sel { flex: 1; }
+.gt-rate-sel  { width: 68px; flex-shrink: 0; }
+
+/* 볼륨 슬라이더 */
+.gt-vol-icon {
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+.gt-vol-slider {
+  flex: 1;
+  height: 4px;
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(to right, var(--primary) 100%, var(--border) 100%);
+  transition: background var(--t);
+}
+.gt-vol-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  cursor: pointer;
+}
+.gt-vol-slider::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--primary);
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.2);
+  cursor: pointer;
 }
 
 .pano-date {

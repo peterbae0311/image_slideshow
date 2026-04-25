@@ -2152,23 +2152,32 @@ function generateGoodTexts() {
       </div>
       <!-- TTS 컨트롤 -->
       <div class="good-text-tts">
-        <button class="gt-tts-toggle${ttsActive ? ' tts-active' : ''}" id="gt-btn-tts" title="음성 읽기">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <div class="gt-tts-row1">
+          <button class="gt-tts-toggle${ttsActive ? ' tts-active' : ''}" id="gt-btn-tts" title="음성 읽기">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+              <path id="gt-tts-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14" ${ttsActive ? '' : 'style="display:none"'}/>
+            </svg>
+          </button>
+          <select class="gt-select-sm gt-voice-sel" id="gt-voice-select" title="음성 유형">
+            <option value="-1">기본 음성</option>
+          </select>
+        </div>
+        <div class="gt-tts-row2">
+          <svg class="gt-vol-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
-            <path id="gt-tts-wave" d="M19.07 4.93a10 10 0 0 1 0 14.14" ${ttsActive ? '' : 'style="display:none"'}/>
           </svg>
-        </button>
-        <select class="gt-select-sm" id="gt-voice-select" title="음성 유형">
-          <option value="-1">기본 음성</option>
-        </select>
-        <select class="gt-select-sm" id="gt-rate-select" title="읽기 속도">
-          <option value="0.6">0.6×</option>
-          <option value="0.8">0.8×</option>
-          <option value="1.0" selected>1.0×</option>
-          <option value="1.2">1.2×</option>
-          <option value="1.5">1.5×</option>
-        </select>
+          <input type="range" class="gt-vol-slider" id="gt-vol-slider" min="0" max="1" step="0.05" value="1" title="음성 크기">
+          <select class="gt-select-sm gt-rate-sel" id="gt-rate-select" title="읽기 속도">
+            <option value="0.6">0.6×</option>
+            <option value="0.8">0.8×</option>
+            <option value="1.0" selected>1.0×</option>
+            <option value="1.2">1.2×</option>
+            <option value="1.5">1.5×</option>
+          </select>
+        </div>
       </div>
     </div>`;
 
@@ -2187,25 +2196,61 @@ function generateGoodTexts() {
       d.classList.toggle('active', j === i % DOT_COUNT));
   }
 
+  // ── 음성 레이블 매핑 (배우·성우·아나운서 스타일 분류) ──
+  const VOICE_LABEL_MAP = [
+    { key: 'sunhi',   label: '선희 — 아나운서 (여성)',  neural: true },
+    { key: 'seoyeon', label: '서연 — 배우 (여성)',      neural: true },
+    { key: 'injoon',  label: '인준 — 성우 (남성)',      neural: true },
+    { key: 'yujin',   label: '유진 — 내레이터 (여성)', neural: true },
+    { key: 'hyunsu',  label: '현수 — 내레이터 (남성)', neural: true },
+    { key: 'heami',   label: '혜미 — 기본 (여성)',     neural: false },
+    { key: 'google',  label: 'Google 한국어 (여성)',    neural: false },
+  ];
+  function voiceLabel(voice) {
+    const nl = voice.name.toLowerCase();
+    const isNeural = nl.includes('neural') || nl.includes('natural') || nl.includes('online');
+    for (const m of VOICE_LABEL_MAP) {
+      if (nl.includes(m.key)) return m.label + (isNeural ? ' ✦' : '');
+    }
+    return voice.name + (isNeural ? ' ✦' : '');
+  }
+
   // ── 음성 목록 로드 ──
   function populateVoices() {
     const sel = panel.querySelector('#gt-voice-select');
     if (!sel) return;
-    const all = speechSynthesis.getVoices();
-    const ko  = all.filter(v => v.lang.startsWith('ko'));
-    sel._voices = [...ko, ...all.filter(v => !v.lang.startsWith('ko'))];
+    const all    = speechSynthesis.getVoices();
+    const ko     = all.filter(v => v.lang.startsWith('ko'));
+    const koNeural  = ko.filter(v => {
+      const nl = v.name.toLowerCase();
+      return nl.includes('neural') || nl.includes('natural') || nl.includes('online');
+    });
+    const koStd  = ko.filter(v => !koNeural.includes(v));
+    sel._voices  = [...koNeural, ...koStd, ...all.filter(v => !v.lang.startsWith('ko'))];
     sel.innerHTML = '<option value="-1">기본 음성</option>';
-    if (ko.length) {
+    if (koNeural.length) {
       const grp = document.createElement('optgroup');
-      grp.label = '한국어';
-      ko.forEach((v, i) => {
+      grp.label = '✦ 고품질 AI 음성 (한국어)';
+      koNeural.forEach((v, i) => {
         const o = document.createElement('option');
-        o.value = i; o.textContent = v.name;
+        o.value = i; o.textContent = voiceLabel(v);
         grp.appendChild(o);
       });
       sel.appendChild(grp);
     }
-    if (ko.length) sel.value = '0'; // 한국어 음성 기본 선택
+    if (koStd.length) {
+      const grp = document.createElement('optgroup');
+      grp.label = '한국어 기본';
+      koStd.forEach((v, i) => {
+        const o = document.createElement('option');
+        o.value = koNeural.length + i; o.textContent = voiceLabel(v);
+        grp.appendChild(o);
+      });
+      sel.appendChild(grp);
+    }
+    // 한국어 고품질 음성 기본 선택, 없으면 첫 한국어
+    if (koNeural.length) sel.value = '0';
+    else if (koStd.length) sel.value = String(koNeural.length);
   }
   populateVoices();
   speechSynthesis.addEventListener('voiceschanged', populateVoices, { once: true });
@@ -2215,11 +2260,15 @@ function generateGoodTexts() {
     speechSynthesis.cancel();
     const sel   = panel.querySelector('#gt-voice-select');
     const rSel  = panel.querySelector('#gt-rate-select');
+    const vSel  = panel.querySelector('#gt-vol-slider');
     const vi    = parseInt(sel?.value ?? '-1');
     const rate  = parseFloat(rSel?.value ?? '1.0');
+    const vol   = parseFloat(vSel?.value ?? '1.0');
     const utt   = new SpeechSynthesisUtterance(text);
     utt.lang    = 'ko-KR';
     utt.rate    = rate;
+    utt.volume  = vol;
+    utt.pitch   = 1.0;
     if (vi >= 0 && sel._voices?.[vi]) utt.voice = sel._voices[vi];
     utt.onend = () => {
       if (ttsActive && !paused) {
@@ -2288,6 +2337,16 @@ function generateGoodTexts() {
       }
     }
   });
+
+  // ── 볼륨 슬라이더 트랙 색상 업데이트 ──
+  const volSlider = panel.querySelector('#gt-vol-slider');
+  function updateVolTrack() {
+    const pct = Math.round(parseFloat(volSlider.value) * 100);
+    volSlider.style.background =
+      `linear-gradient(to right, var(--primary) ${pct}%, var(--border) ${pct}%)`;
+  }
+  volSlider.addEventListener('input', updateVolTrack);
+  updateVolTrack();
 
   // ── TTS 토글 ──
   panel.querySelector('#gt-btn-tts').addEventListener('click', () => {
